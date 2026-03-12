@@ -3,6 +3,7 @@ import { AuthCard } from "../ui/AuthCard";
 import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
+import { t } from "../../i18n";
 
 type ResetScreenProps = {
   onBackToLogin: () => void;
@@ -30,8 +31,8 @@ export function ResetScreen(props: ResetScreenProps) {
     if (emailError()) {
       pushToast({
         type: "error",
-        title: "Invalid email",
-        description: "Enter a valid account email to receive a reset link.",
+        title: t.auth.reset.toastErrorTitle,
+        description: t.auth.reset.toastErrorDescription,
       });
       return;
     }
@@ -39,36 +40,36 @@ export function ResetScreen(props: ResetScreenProps) {
     setEmailSent(true);
     pushToast({
       type: "info",
-      title: "Reset link requested",
-      description: "If this account exists, a reset email has been queued.",
+      title: t.auth.reset.toastInfoTitle,
+      description: t.auth.reset.toastInfoDescription,
     });
   };
 
   return (
-    <AuthCard title="Reset Password" subtitle="We will send a secure reset link to your email.">
+    <AuthCard title={t.auth.reset.title} subtitle={t.auth.reset.subtitle}>
       <form class="mt-6 space-y-4" onSubmit={handleSubmit}>
         <TextField
           autoComplete="email"
           error={emailError()}
-          label="Account Email"
+          label={t.auth.reset.emailLabel}
           name="email"
           onInput={setEmail}
-          placeholder="you@company.com"
+          placeholder={t.auth.reset.emailPlaceholder}
           required
           type="email"
           value={email()}
         />
         <Button variant="secondary" class="w-full" type="submit">
-          Send Reset Link
+          {t.auth.reset.submit}
         </Button>
         <Show when={emailSent()}>
           <p class="text-sm text-emerald-600 dark:text-emerald-400" role="status">
-            Reset link sent. Check your inbox for next steps.
+            {t.auth.reset.successInline}
           </p>
         </Show>
       </form>
       <Button variant="ghost" class="mt-4 justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onBackToLogin} type="button">
-        Back to login
+        {t.auth.reset.backToLogin}
       </Button>
     </AuthCard>
   );

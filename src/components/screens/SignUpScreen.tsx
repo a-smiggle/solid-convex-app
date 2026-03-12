@@ -3,6 +3,7 @@ import { AuthCard } from "../ui/AuthCard";
 import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
+import { t } from "../../i18n";
 
 type SignUpScreenProps = {
   onBackToLogin: () => void;
@@ -48,8 +49,8 @@ export function SignUpScreen(props: SignUpScreenProps) {
     if (fullNameError() || emailError() || passwordError()) {
       pushToast({
         type: "error",
-        title: "Sign-up form incomplete",
-        description: "Please review required fields and try again.",
+        title: t.auth.signup.toastErrorTitle,
+        description: t.auth.signup.toastErrorDescription,
       });
       return;
     }
@@ -57,21 +58,21 @@ export function SignUpScreen(props: SignUpScreenProps) {
     setCreated(true);
     pushToast({
       type: "success",
-      title: "Account details validated",
-      description: "Connect this step to Convex auth to finalize signup.",
+      title: t.auth.signup.toastSuccessTitle,
+      description: t.auth.signup.toastSuccessDescription,
     });
   };
 
   return (
-    <AuthCard title="Sign Up" subtitle="Create your team workspace.">
+    <AuthCard title={t.auth.signup.title} subtitle={t.auth.signup.subtitle}>
       <form class="mt-6 space-y-4" onSubmit={handleSubmit}>
         <TextField
           autoComplete="name"
           error={fullNameError()}
-          label="Full Name"
+          label={t.auth.signup.fullNameLabel}
           name="name"
           onInput={setFullName}
-          placeholder="Jamie Doe"
+          placeholder={t.auth.signup.fullNamePlaceholder}
           required
           type="text"
           value={fullName()}
@@ -79,10 +80,10 @@ export function SignUpScreen(props: SignUpScreenProps) {
         <TextField
           autoComplete="email"
           error={emailError()}
-          label="Work Email"
+          label={t.auth.signup.workEmailLabel}
           name="email"
           onInput={setEmail}
-          placeholder="jamie@company.com"
+          placeholder={t.auth.signup.workEmailPlaceholder}
           required
           type="email"
           value={email()}
@@ -90,26 +91,26 @@ export function SignUpScreen(props: SignUpScreenProps) {
         <TextField
           autoComplete="new-password"
           error={passwordError()}
-          hint="At least 8 characters"
-          label="Password"
+          hint={t.auth.signup.passwordHint}
+          label={t.auth.signup.passwordLabel}
           name="password"
           onInput={setPassword}
-          placeholder="At least 8 characters"
+          placeholder={t.auth.signup.passwordPlaceholder}
           required
           type="password"
           value={password()}
         />
         <Button variant="warning" class="w-full" type="submit">
-          Create Account
+          {t.auth.signup.submit}
         </Button>
         <Show when={created()}>
           <p class="text-sm text-emerald-600 dark:text-emerald-400" role="status">
-            Account details look good. Connect this action to Convex auth to complete signup.
+            {t.auth.signup.successInline}
           </p>
         </Show>
       </form>
       <Button variant="ghost" class="mt-4 justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onBackToLogin} type="button">
-        Back to login
+        {t.auth.signup.backToLogin}
       </Button>
     </AuthCard>
   );

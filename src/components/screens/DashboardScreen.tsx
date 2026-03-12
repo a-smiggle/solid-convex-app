@@ -1,5 +1,6 @@
 import { Match, Show, Suspense, Switch, createEffect, createMemo, createSignal, lazy } from "solid-js";
 import { Sidebar } from "../dashboard/Sidebar";
+import { t } from "../../i18n";
 import type { DashboardTab, SettingsTab } from "../../types/ui";
 
 const DashboardOverviewPage = lazy(() =>
@@ -116,7 +117,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
             <Suspense
               fallback={
                 <div class="surface-card text-subtle grid min-h-[260px] place-items-center text-sm">
-                  Loading section...
+                  {t.app.loadingSection}
                 </div>
               }
             >

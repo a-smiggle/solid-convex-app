@@ -3,6 +3,7 @@ import { AuthCard } from "../ui/AuthCard";
 import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
+import { t } from "../../i18n";
 
 type LoginScreenProps = {
   onLogin: () => void;
@@ -51,8 +52,8 @@ export function LoginScreen(props: LoginScreenProps) {
     if (!formValid()) {
       pushToast({
         type: "error",
-        title: "Fix form errors",
-        description: "Please correct the highlighted fields before logging in.",
+        title: t.auth.login.toastErrorTitle,
+        description: t.auth.login.toastErrorDescription,
       });
       return;
     }
@@ -61,24 +62,24 @@ export function LoginScreen(props: LoginScreenProps) {
     await new Promise((resolve) => setTimeout(resolve, 450));
     pushToast({
       type: "success",
-      title: "Logged in",
-      description: "Welcome back. Redirecting to dashboard.",
+      title: t.auth.login.toastSuccessTitle,
+      description: t.auth.login.toastSuccessDescription,
     });
     props.onLogin();
     setIsLoading(false);
   };
 
   return (
-    <AuthCard title="Login" subtitle="Welcome back. Sign in to continue.">
+    <AuthCard title={t.auth.login.title} subtitle={t.auth.login.subtitle}>
       <form class="mt-6 space-y-4" onSubmit={handleSubmit}>
         <TextField
           autoComplete="email"
           error={emailError()}
-          hint="Use your account email"
-          label="Email"
+          hint={t.auth.login.emailHint}
+          label={t.auth.login.emailLabel}
           name="email"
           onInput={setEmail}
-          placeholder="you@company.com"
+          placeholder={t.auth.login.emailPlaceholder}
           required
           type="email"
           value={email()}
@@ -86,24 +87,24 @@ export function LoginScreen(props: LoginScreenProps) {
         <TextField
           autoComplete="current-password"
           error={passwordError()}
-          label="Password"
+          label={t.auth.login.passwordLabel}
           name="password"
           onInput={setPassword}
-          placeholder="********"
+          placeholder={t.auth.login.passwordPlaceholder}
           required
           type="password"
           value={password()}
         />
         <Button class="w-full" disabled={isLoading()} type="submit">
-          {isLoading() ? "Signing in..." : "Login"}
+          {isLoading() ? t.auth.login.submitting : t.auth.login.submit}
         </Button>
       </form>
       <div class="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:justify-between">
         <Button variant="ghost" class="justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onShowReset} type="button">
-          Forgot password?
+          {t.auth.login.forgotPassword}
         </Button>
         <Button variant="ghost" class="justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onShowSignup} type="button">
-          Create account
+          {t.auth.login.createAccount}
         </Button>
       </div>
     </AuthCard>

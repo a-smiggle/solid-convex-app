@@ -1,18 +1,19 @@
-import { For, Show } from "solid-js";
+import { For, Show, createMemo } from "solid-js";
 import type { SettingsTab } from "../../types/ui";
 import { DataTable, type DataTableColumn } from "../ui/DataTable";
 import { Button } from "../ui/Button";
 import { useToast } from "../feedback/ToastProvider";
+import { t } from "../../i18n";
 
 const settingsTabs: Array<{ id: SettingsTab; label: string }> = [
-  { id: "billing", label: "Billing" },
-  { id: "profile", label: "Profile" },
-  { id: "team", label: "Team" },
-  { id: "integrations", label: "Integrations" },
-  { id: "security", label: "Security" },
-  { id: "notifications", label: "Notifications" },
-  { id: "apiKeys", label: "API Keys" },
-  { id: "auditLog", label: "Audit Log" },
+  { id: "billing", label: t.settings.tabs.billing },
+  { id: "profile", label: t.settings.tabs.profile },
+  { id: "team", label: t.settings.tabs.team },
+  { id: "integrations", label: t.settings.tabs.integrations },
+  { id: "security", label: t.settings.tabs.security },
+  { id: "notifications", label: t.settings.tabs.notifications },
+  { id: "apiKeys", label: t.settings.tabs.apiKeys },
+  { id: "auditLog", label: t.settings.tabs.auditLog },
 ];
 
 const invoiceColumns: DataTableColumn[] = [
@@ -94,6 +95,44 @@ type SettingsPageProps = {
 
 export function SettingsPage(props: SettingsPageProps) {
   const { pushToast } = useToast();
+  const tabRefs: Partial<Record<SettingsTab, HTMLButtonElement>> = {};
+
+  const activeIndex = createMemo(() => settingsTabs.findIndex((tab) => tab.id === props.activeTab));
+
+  const tabId = (tab: SettingsTab) => `settings-tab-${tab}`;
+  const panelId = (tab: SettingsTab) => `settings-panel-${tab}`;
+
+  const selectByIndex = (index: number) => {
+    const normalized = (index + settingsTabs.length) % settingsTabs.length;
+    const nextTab = settingsTabs[normalized];
+    props.onSelectTab(nextTab.id);
+    tabRefs[nextTab.id]?.focus();
+  };
+
+  const handleTabKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      selectByIndex(activeIndex() + 1);
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      selectByIndex(activeIndex() - 1);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      selectByIndex(0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      selectByIndex(settingsTabs.length - 1);
+    }
+  };
 
   const runAction = (actionLabel: string) => {
     pushToast({
@@ -121,27 +160,36 @@ export function SettingsPage(props: SettingsPageProps) {
   return (
     <section class="space-y-4">
       <div class="overflow-x-auto pb-1 pt-1">
-        <div class="flex min-w-max gap-2">
-        <For each={settingsTabs}>
-          {(tab) => (
-            <button
-              class={`motion-interactive rounded-lg border px-3 py-2 text-sm font-medium ${
-                props.activeTab === tab.id
-                  ? "border-cyan-300 bg-cyan-50 text-cyan-900 dark:border-cyan-900/70 dark:bg-cyan-900/30 dark:text-cyan-100"
-                  : "border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-              }`}
-              onClick={() => props.onSelectTab(tab.id)}
-              type="button"
-            >
-              {tab.label}
-            </button>
-          )}
-        </For>
+        <div aria-label={t.settings.tabListLabel} class="flex min-w-max gap-2" role="tablist">
+          <For each={settingsTabs}>
+            {(tab) => (
+              <button
+                aria-controls={panelId(tab.id)}
+                aria-selected={props.activeTab === tab.id}
+                class={`motion-interactive rounded-lg border px-3 py-2 text-sm font-medium ${
+                  props.activeTab === tab.id
+                    ? "border-cyan-300 bg-cyan-50 text-cyan-900 dark:border-cyan-900/70 dark:bg-cyan-900/30 dark:text-cyan-100"
+                    : "border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                }`}
+                id={tabId(tab.id)}
+                onClick={() => props.onSelectTab(tab.id)}
+                onKeyDown={handleTabKeyDown}
+                ref={(element) => {
+                  tabRefs[tab.id] = element;
+                }}
+                role="tab"
+                tabIndex={props.activeTab === tab.id ? 0 : -1}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            )}
+          </For>
         </div>
       </div>
 
       <Show when={props.activeTab === "billing"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("billing")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("billing")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Billing</h3>
             <div class="flex flex-wrap gap-2">
@@ -178,7 +226,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "profile"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("profile")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("profile")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Profile</h3>
             <div class="flex flex-wrap gap-2">
@@ -205,7 +253,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "team"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("team")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("team")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Team</h3>
             <div class="flex flex-wrap gap-2">
@@ -226,7 +274,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "integrations"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("integrations")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("integrations")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Integrations</h3>
             <div class="flex flex-wrap gap-2">
@@ -253,7 +301,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "security"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("security")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("security")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Security</h3>
             <div class="flex flex-wrap gap-2">
@@ -280,7 +328,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "notifications"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("notifications")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("notifications")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Notifications</h3>
             <div class="flex flex-wrap gap-2">
@@ -307,7 +355,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "apiKeys"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("apiKeys")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("apiKeys")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">API Keys</h3>
             <div class="flex flex-wrap gap-2">
@@ -328,7 +376,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "auditLog"}>
-        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article aria-labelledby={tabId("auditLog")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("auditLog")} role="tabpanel" tabIndex={0}>
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Audit Log</h3>
             <div class="flex flex-wrap gap-2">

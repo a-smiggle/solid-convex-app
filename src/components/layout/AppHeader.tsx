@@ -1,6 +1,7 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { Button } from "../ui/Button";
 import { ChevronDown, LogOut, Menu, Moon, Settings, Sun, User } from "lucide-solid";
+import { t } from "../../i18n";
 import type { Theme } from "../../types/ui";
 
 type AppHeaderProps = {
@@ -52,19 +53,19 @@ export function AppHeader(props: AppHeaderProps) {
     <div class="motion-enter-fade motion-surface surface-elevated relative z-40 mb-5 flex flex-wrap items-center justify-between gap-3 px-3 py-3 backdrop-blur sm:mb-6 sm:px-4 md:flex-nowrap">
       <div class="flex min-w-0 items-center gap-2.5 sm:gap-3">
         {props.showSidebarToggle && (
-          <Button aria-label="Toggle sidebar" variant="neutral" class="px-3 py-2" onClick={props.onToggleSidebar} type="button">
+          <Button aria-label={t.header.toggleSidebar} variant="neutral" class="px-3 py-2" onClick={props.onToggleSidebar} type="button">
             <Menu aria-hidden="true" class="h-4 w-4" stroke-width={2} />
           </Button>
         )}
         <div class="min-w-0">
-          <p class="text-subtle text-xs uppercase tracking-[0.22em]">Solid + Convex</p>
-          <h1 class="truncate text-base font-semibold sm:text-lg">Starter UI Scaffold</h1>
+          <p class="text-subtle text-xs uppercase tracking-[0.22em]">{t.header.brand}</p>
+          <h1 class="truncate text-base font-semibold sm:text-lg">{t.header.title}</h1>
         </div>
       </div>
       <div class="flex items-center gap-2 self-end md:self-auto">
         <Button
-          aria-label={props.theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          title={props.theme === "dark" ? "Light mode" : "Dark mode"}
+          aria-label={props.theme === "dark" ? t.header.switchToLightMode : t.header.switchToDarkMode}
+          title={props.theme === "dark" ? t.header.lightMode : t.header.darkMode}
           variant="neutral"
           class="px-3 py-2"
           onClick={props.onToggleTheme}
@@ -81,7 +82,7 @@ export function AppHeader(props: AppHeaderProps) {
             <Button
               aria-controls={menuId}
               aria-expanded={menuOpen()}
-              aria-label="Open user menu"
+              aria-label={t.header.openUserMenu}
               aria-haspopup="menu"
               variant="neutral"
               class="flex items-center gap-1 px-3 py-2"
@@ -108,7 +109,7 @@ export function AppHeader(props: AppHeaderProps) {
                   type="button"
                 >
                   <Settings aria-hidden="true" class="h-4 w-4" stroke-width={2} />
-                  User Settings
+                  {t.header.userSettings}
                 </button>
                 <button
                   class="interactive-item interactive-item-danger flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
@@ -120,7 +121,7 @@ export function AppHeader(props: AppHeaderProps) {
                   type="button"
                 >
                   <LogOut aria-hidden="true" class="h-4 w-4" stroke-width={2} />
-                  Logout
+                  {t.header.logout}
                 </button>
               </div>
             )}

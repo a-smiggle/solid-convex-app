@@ -2,6 +2,7 @@ import { Suspense, createEffect, createSignal, lazy } from "solid-js";
 import { AppHeader } from "./components/layout/AppHeader";
 import { AppFooter } from "./components/layout/AppFooter";
 import { ToastProvider } from "./components/feedback/ToastProvider";
+import { t } from "./i18n";
 import type { Screen, Theme } from "./types/ui";
 
 const AuthPromo = lazy(() => import("./components/auth/AuthPromo").then((module) => ({ default: module.AuthPromo })));
@@ -95,7 +96,7 @@ function App() {
           <Suspense
             fallback={
               <div class="surface-panel text-subtle grid min-h-[420px] place-items-center text-sm shadow-soft">
-                Loading interface...
+                {t.app.loadingInterface}
               </div>
             }
           >
