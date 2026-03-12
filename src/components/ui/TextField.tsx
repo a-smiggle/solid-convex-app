@@ -28,8 +28,8 @@ export function TextField(props: TextFieldProps) {
       <input
         aria-describedby={hasMessage() ? messageId() : undefined}
         aria-invalid={props.error ? "true" : "false"}
-        class={`mt-1 w-full rounded-lg border bg-white px-3 py-2 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-800 ${
-          props.error ? "border-rose-400 dark:border-rose-500" : "border-slate-300 dark:border-slate-700"
+        class={`input-field mt-1 w-full rounded-lg px-3 py-2 outline-none transition disabled:cursor-not-allowed disabled:opacity-70 ${
+          props.error ? "input-error" : ""
         } ${props.inputClass ?? ""}`.trim()}
         disabled={props.disabled}
         id={inputId()}
@@ -42,7 +42,7 @@ export function TextField(props: TextFieldProps) {
         value={props.value ?? ""}
       />
       {hasMessage() && (
-        <p class={`mt-1 text-xs ${props.error ? "text-rose-600 dark:text-rose-300" : "text-slate-500 dark:text-slate-400"}`} id={messageId()}>
+        <p class={`mt-1 text-xs ${props.error ? "text-danger" : "text-subtle"}`} id={messageId()}>
           {props.error ?? props.hint}
         </p>
       )}

@@ -74,8 +74,8 @@ function App() {
 
   return (
     <ToastProvider>
-      <div class="flex min-h-screen flex-col bg-gradient-to-b from-cyan-50 via-white to-amber-50 bg-hero-grid [background-size:24px_24px] dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
-        <a class="sr-only skip-link rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 dark:bg-slate-900 dark:text-slate-100" href="#app-main-content">
+      <div class="app-shell-bg flex min-h-screen flex-col">
+        <a class="surface-elevated sr-only skip-link px-3 py-2 text-sm font-semibold" href="#app-main-content">
           Skip to main content
         </a>
         <main
@@ -94,7 +94,7 @@ function App() {
 
           <Suspense
             fallback={
-              <div class="grid min-h-[420px] place-items-center rounded-2xl border border-slate-200/70 bg-white/80 text-sm text-slate-500 shadow-soft dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+              <div class="surface-panel text-subtle grid min-h-[420px] place-items-center text-sm shadow-soft">
                 Loading interface...
               </div>
             }

@@ -49,7 +49,7 @@ export function AppHeader(props: AppHeaderProps) {
   });
 
   return (
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/60 bg-white/80 px-3 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/75 sm:mb-6 sm:px-4 md:flex-nowrap">
+    <div class="surface-elevated mb-5 flex flex-wrap items-center justify-between gap-3 px-3 py-3 backdrop-blur sm:mb-6 sm:px-4 md:flex-nowrap">
       <div class="flex min-w-0 items-center gap-2.5 sm:gap-3">
         {props.showSidebarToggle && (
           <Button aria-label="Toggle sidebar" variant="neutral" class="px-3 py-2" onClick={props.onToggleSidebar} type="button">
@@ -57,7 +57,7 @@ export function AppHeader(props: AppHeaderProps) {
           </Button>
         )}
         <div class="min-w-0">
-          <p class="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Solid + Convex</p>
+          <p class="text-subtle text-xs uppercase tracking-[0.22em]">Solid + Convex</p>
           <h1 class="truncate text-base font-semibold sm:text-lg">Starter UI Scaffold</h1>
         </div>
       </div>
@@ -95,11 +95,11 @@ export function AppHeader(props: AppHeaderProps) {
             {menuOpen() && (
               <div
                 id={menuId}
-                class="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-soft dark:border-slate-700 dark:bg-slate-900"
+                class="surface-flyout absolute right-0 z-50 mt-2 w-48 p-1.5 shadow-soft"
                 role="menu"
               >
                 <button
-                  class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                  class="interactive-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
                   onClick={() => {
                     props.onUserSettings?.();
                     setMenuOpen(false);
@@ -111,7 +111,7 @@ export function AppHeader(props: AppHeaderProps) {
                   User Settings
                 </button>
                 <button
-                  class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20"
+                  class="interactive-item interactive-item-danger flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
                   onClick={() => {
                     props.onLogout?.();
                     setMenuOpen(false);

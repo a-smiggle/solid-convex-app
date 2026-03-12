@@ -36,20 +36,20 @@ function typeStyles(type: ToastType) {
   if (type === "success") {
     return {
       icon: <CheckCircle2 class="h-4 w-4" stroke-width={2} aria-hidden="true" />,
-      wrapper: "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-700/80 dark:bg-emerald-950/85 dark:text-emerald-100",
+      wrapper: "tone-success",
     };
   }
 
   if (type === "error") {
     return {
       icon: <TriangleAlert class="h-4 w-4" stroke-width={2} aria-hidden="true" />,
-      wrapper: "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-700/80 dark:bg-rose-950/85 dark:text-rose-100",
+      wrapper: "tone-danger",
     };
   }
 
   return {
     icon: <Info class="h-4 w-4" stroke-width={2} aria-hidden="true" />,
-    wrapper: "border-cyan-200 bg-cyan-50 text-cyan-900 dark:border-cyan-700/80 dark:bg-cyan-950/85 dark:text-cyan-100",
+    wrapper: "tone-info",
   };
 }
 
@@ -113,7 +113,7 @@ export function ToastProvider(props: ParentProps) {
                     </div>
                     <button
                       aria-label="Dismiss notification"
-                      class="rounded-md p-1 transition hover:bg-black/10 dark:hover:bg-white/10"
+                      class="interactive-item rounded-md p-1"
                       onClick={() => removeToast(toast.id)}
                       type="button"
                     >
