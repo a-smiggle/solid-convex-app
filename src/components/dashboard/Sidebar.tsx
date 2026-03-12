@@ -1,4 +1,5 @@
 import { For } from "solid-js";
+import { FileText, LayoutDashboard, Settings2 } from "lucide-solid";
 import type { DashboardTab } from "../../types/ui";
 
 type SidebarProps = {
@@ -10,30 +11,14 @@ type SidebarProps = {
 
 function TabIcon(props: { tab: DashboardTab }) {
   if (props.tab === "dashboard") {
-    return (
-      <svg aria-hidden="true" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13h8V3H3v10Zm10 8h8V11h-8v10ZM3 21h8v-6H3v6Zm10-10h8V3h-8v8Z" />
-      </svg>
-    );
+    return <LayoutDashboard aria-hidden="true" class="h-4 w-4" stroke-width={2} />;
   }
 
   if (props.tab === "content") {
-    return (
-      <svg aria-hidden="true" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 4h12a2 2 0 0 1 2 2v12l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2Z" />
-      </svg>
-    );
+    return <FileText aria-hidden="true" class="h-4 w-4" stroke-width={2} />;
   }
 
-  return (
-    <svg aria-hidden="true" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M10.2 4.32a1 1 0 0 1 .95-.82h1.7a1 1 0 0 1 .95.82l.3 1.45c.22.1.44.22.65.35l1.4-.48a1 1 0 0 1 1.16.4l.86 1.48a1 1 0 0 1-.22 1.2l-1.1.98c.03.25.05.5.05.75s-.02.5-.05.75l1.1.98a1 1 0 0 1 .22 1.2l-.86 1.48a1 1 0 0 1-1.16.4l-1.4-.48c-.21.13-.43.25-.65.35l-.3 1.45a1 1 0 0 1-.95.82h-1.7a1 1 0 0 1-.95-.82l-.3-1.45a5.7 5.7 0 0 1-.65-.35l-1.4.48a1 1 0 0 1-1.16-.4l-.86-1.48a1 1 0 0 1 .22-1.2l1.1-.98a6.2 6.2 0 0 1 0-1.5l-1.1-.98a1 1 0 0 1-.22-1.2l.86-1.48a1 1 0 0 1 1.16-.4l1.4.48c.21-.13.43-.25.65-.35l.3-1.45ZM12 14.4a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z"
-      />
-    </svg>
-  );
+  return <Settings2 aria-hidden="true" class="h-4 w-4" stroke-width={2} />;
 }
 
 export function Sidebar(props: SidebarProps) {

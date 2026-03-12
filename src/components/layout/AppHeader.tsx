@@ -1,4 +1,6 @@
+import { createSignal, onCleanup } from "solid-js";
 import { Button } from "../ui/Button";
+import { ChevronDown, LogOut, Menu, Moon, Settings, Sun, User } from "lucide-solid";
 import type { Theme } from "../../types/ui";
 
 type AppHeaderProps = {
@@ -8,15 +10,35 @@ type AppHeaderProps = {
   onToggleSidebar?: () => void;
   showLogout?: boolean;
   onLogout?: () => void;
+  onUserSettings?: () => void;
 };
 
 export function AppHeader(props: AppHeaderProps) {
+  const [menuOpen, setMenuOpen] = createSignal(false);
+  let menuRef: HTMLDivElement | undefined;
+
+  const handleDocumentClick = (event: MouseEvent) => {
+    if (!menuRef) {
+      return;
+    }
+
+    const targetNode = event.target;
+    if (targetNode instanceof Node && !menuRef.contains(targetNode)) {
+      setMenuOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleDocumentClick);
+  onCleanup(() => {
+    document.removeEventListener("mousedown", handleDocumentClick);
+  });
+
   return (
     <div class="mb-6 flex items-center justify-between rounded-xl border border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/75">
       <div class="flex items-center gap-3">
         {props.showSidebarToggle && (
           <Button aria-label="Toggle sidebar" variant="neutral" class="px-3 py-2" onClick={props.onToggleSidebar} type="button">
-            <span aria-hidden="true">☰</span>
+            <Menu aria-hidden="true" class="h-4 w-4" stroke-width={2} />
           </Button>
         )}
         <div>
@@ -34,19 +56,58 @@ export function AppHeader(props: AppHeaderProps) {
           type="button"
         >
           {props.theme === "dark" ? (
-            <svg aria-hidden="true" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.5M12 18.5V21M5.64 5.64l1.77 1.77M16.59 16.59l1.77 1.77M3 12h2.5M18.5 12H21M5.64 18.36l1.77-1.77M16.59 7.41l1.77-1.77M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
-            </svg>
+            <Sun aria-hidden="true" class="h-4 w-4" stroke-width={2} />
           ) : (
-            <svg aria-hidden="true" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8Z" />
-            </svg>
+            <Moon aria-hidden="true" class="h-4 w-4" stroke-width={2} />
           )}
         </Button>
         {props.showLogout && (
-          <Button class="px-3 py-2 text-sm" onClick={props.onLogout} type="button">
-            Log out
-          </Button>
+          <div class="relative" ref={menuRef}>
+            <Button
+              aria-expanded={menuOpen()}
+              aria-label="Open user menu"
+              aria-haspopup="menu"
+              variant="neutral"
+              class="flex items-center gap-1 px-3 py-2"
+              onClick={() => setMenuOpen(!menuOpen())}
+              type="button"
+            >
+              <User aria-hidden="true" class="h-4 w-4" stroke-width={2} />
+              <ChevronDown aria-hidden="true" class={`h-4 w-4 transition ${menuOpen() ? "rotate-180" : ""}`} stroke-width={2} />
+            </Button>
+
+            {menuOpen() && (
+              <div
+                class="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-soft dark:border-slate-700 dark:bg-slate-900"
+                role="menu"
+              >
+                <button
+                  class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                  onClick={() => {
+                    props.onUserSettings?.();
+                    setMenuOpen(false);
+                  }}
+                  role="menuitem"
+                  type="button"
+                >
+                  <Settings aria-hidden="true" class="h-4 w-4" stroke-width={2} />
+                  User Settings
+                </button>
+                <button
+                  class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20"
+                  onClick={() => {
+                    props.onLogout?.();
+                    setMenuOpen(false);
+                  }}
+                  role="menuitem"
+                  type="button"
+                >
+                  <LogOut aria-hidden="true" class="h-4 w-4" stroke-width={2} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
