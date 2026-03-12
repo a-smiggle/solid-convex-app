@@ -23,13 +23,14 @@ function TabIcon(props: { tab: DashboardTab }) {
 
 export function Sidebar(props: SidebarProps) {
   return (
-    <nav class="space-y-2">
+    <nav aria-label="Dashboard sections" class="space-y-2">
       <For each={props.tabs}>
         {(tab) => {
           const active = () => props.activeTab === tab.id;
           return (
             <button
               aria-label={tab.label}
+              aria-current={active() ? "page" : undefined}
               class={`w-full rounded-xl border px-3 py-2 text-left transition ${
                 active()
                   ? "border-cyan-200 bg-cyan-50 text-cyan-900 dark:border-cyan-900/60 dark:bg-cyan-900/25 dark:text-cyan-100"

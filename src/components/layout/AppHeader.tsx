@@ -1,4 +1,4 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 import { Button } from "../ui/Button";
 import { ChevronDown, LogOut, Menu, Moon, Settings, Sun, User } from "lucide-solid";
 import type { Theme } from "../../types/ui";
@@ -16,6 +16,7 @@ type AppHeaderProps = {
 export function AppHeader(props: AppHeaderProps) {
   const [menuOpen, setMenuOpen] = createSignal(false);
   let menuRef: HTMLDivElement | undefined;
+  const menuId = "user-menu";
 
   const handleDocumentClick = (event: MouseEvent) => {
     if (!menuRef) {
@@ -28,25 +29,39 @@ export function AppHeader(props: AppHeaderProps) {
     }
   };
 
-  document.addEventListener("mousedown", handleDocumentClick);
-  onCleanup(() => {
-    document.removeEventListener("mousedown", handleDocumentClick);
+  const handleDocumentKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setMenuOpen(false);
+    }
+  };
+
+  createEffect(() => {
+    if (!menuOpen()) {
+      return;
+    }
+
+    document.addEventListener("mousedown", handleDocumentClick);
+    document.addEventListener("keydown", handleDocumentKeyDown);
+    onCleanup(() => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
+    });
   });
 
   return (
-    <div class="mb-6 flex items-center justify-between rounded-xl border border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/75">
-      <div class="flex items-center gap-3">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/60 bg-white/80 px-3 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/75 sm:mb-6 sm:px-4 md:flex-nowrap">
+      <div class="flex min-w-0 items-center gap-2.5 sm:gap-3">
         {props.showSidebarToggle && (
           <Button aria-label="Toggle sidebar" variant="neutral" class="px-3 py-2" onClick={props.onToggleSidebar} type="button">
             <Menu aria-hidden="true" class="h-4 w-4" stroke-width={2} />
           </Button>
         )}
-        <div>
+        <div class="min-w-0">
           <p class="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Solid + Convex</p>
-          <h1 class="text-lg font-semibold">Starter UI Scaffold</h1>
+          <h1 class="truncate text-base font-semibold sm:text-lg">Starter UI Scaffold</h1>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 self-end md:self-auto">
         <Button
           aria-label={props.theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           title={props.theme === "dark" ? "Light mode" : "Dark mode"}
@@ -64,6 +79,7 @@ export function AppHeader(props: AppHeaderProps) {
         {props.showLogout && (
           <div class="relative" ref={menuRef}>
             <Button
+              aria-controls={menuId}
               aria-expanded={menuOpen()}
               aria-label="Open user menu"
               aria-haspopup="menu"
@@ -78,6 +94,7 @@ export function AppHeader(props: AppHeaderProps) {
 
             {menuOpen() && (
               <div
+                id={menuId}
                 class="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-soft dark:border-slate-700 dark:bg-slate-900"
                 role="menu"
               >
