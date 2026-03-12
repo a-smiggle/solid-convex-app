@@ -20,7 +20,7 @@ export function Button(props: ButtonProps) {
   return (
     <button
       {...props}
-      class={`rounded-lg px-4 py-2.5 font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 ${variantClasses[variant()]} ${props.class ?? ""}`.trim()}
+      class={`motion-interactive rounded-lg px-4 py-2.5 font-semibold active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] disabled:cursor-not-allowed disabled:opacity-70 ${variantClasses[variant()]} ${props.class ?? ""}`.trim()}
     >
       {props.children}
     </button>

@@ -100,7 +100,7 @@ export function ToastProvider(props: ParentProps) {
               return (
                 <article
                   aria-live="polite"
-                  class={`pointer-events-auto w-full rounded-xl border p-3 shadow-soft transition ${styles.wrapper}`}
+                  class={`motion-enter-slide-down motion-surface pointer-events-auto w-full rounded-xl border p-3 shadow-soft ${styles.wrapper}`}
                   role="status"
                 >
                   <div class="flex items-start gap-2">

@@ -3,11 +3,11 @@ import { dashboardStats, pipelineItems } from "../../data/dashboard";
 
 export function DashboardOverviewPage() {
   return (
-    <section class="space-y-6">
+    <section class="motion-enter-fade-up space-y-6">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <For each={dashboardStats}>
           {(stat) => (
-            <article class="rounded-xl border border-slate-200/70 bg-white/90 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+            <article class="motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
               <p class="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
               <p class="mt-2 text-2xl font-semibold">{stat.value}</p>
               <p class="mt-1 text-sm text-emerald-600 dark:text-emerald-400">{stat.trend} this month</p>
@@ -16,7 +16,7 @@ export function DashboardOverviewPage() {
         </For>
       </div>
 
-      <div class="rounded-xl border border-slate-200/70 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+      <div class="motion-surface rounded-xl border border-slate-200/70 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
         <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
           <h3 class="font-semibold">Revenue Pipeline</h3>
         </div>

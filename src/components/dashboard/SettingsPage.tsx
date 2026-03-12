@@ -120,12 +120,12 @@ export function SettingsPage(props: SettingsPageProps) {
 
   return (
     <section class="space-y-4">
-      <div class="overflow-x-auto pb-1">
+      <div class="overflow-x-auto pb-1 pt-1">
         <div class="flex min-w-max gap-2">
         <For each={settingsTabs}>
           {(tab) => (
             <button
-              class={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+              class={`motion-interactive rounded-lg border px-3 py-2 text-sm font-medium ${
                 props.activeTab === tab.id
                   ? "border-cyan-300 bg-cyan-50 text-cyan-900 dark:border-cyan-900/70 dark:bg-cyan-900/30 dark:text-cyan-100"
                   : "border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
@@ -141,7 +141,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </div>
 
       <Show when={props.activeTab === "billing"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Billing</h3>
             <div class="flex flex-wrap gap-2">
@@ -178,7 +178,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "profile"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Profile</h3>
             <div class="flex flex-wrap gap-2">
@@ -205,7 +205,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "team"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Team</h3>
             <div class="flex flex-wrap gap-2">
@@ -226,7 +226,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "integrations"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Integrations</h3>
             <div class="flex flex-wrap gap-2">
@@ -253,7 +253,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "security"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Security</h3>
             <div class="flex flex-wrap gap-2">
@@ -280,7 +280,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "notifications"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Notifications</h3>
             <div class="flex flex-wrap gap-2">
@@ -307,7 +307,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "apiKeys"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">API Keys</h3>
             <div class="flex flex-wrap gap-2">
@@ -328,7 +328,7 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "auditLog"}>
-        <article class="rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Audit Log</h3>
             <div class="flex flex-wrap gap-2">

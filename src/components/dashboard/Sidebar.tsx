@@ -31,7 +31,7 @@ export function Sidebar(props: SidebarProps) {
             <button
               aria-label={tab.label}
               aria-current={active() ? "page" : undefined}
-              class={`w-full rounded-xl border px-3 py-2 text-left transition ${
+              class={`motion-interactive w-full rounded-xl border px-3 py-2 text-left ${
                 active()
                   ? "tone-info"
                   : "border-transparent interactive-item hover:border-[var(--color-border-default)]"

@@ -100,7 +100,7 @@ function App() {
             }
           >
             {screen() !== "dashboard" ? (
-              <section class="grid gap-6 lg:grid-cols-[1.1fr_1fr]" id="app-main-content" tabIndex={-1}>
+              <section class="motion-enter-fade-up grid gap-6 lg:grid-cols-[1.1fr_1fr]" id="app-main-content" tabIndex={-1}>
                 <AuthPromo />
 
                 {screen() === "login" && (
@@ -116,7 +116,7 @@ function App() {
                 {screen() === "reset" && <ResetScreen onBackToLogin={() => setScreen("login")} />}
               </section>
             ) : (
-              <div class="flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>
+              <div class="motion-enter-fade-up flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>
                 <DashboardScreen
                   sidebarCollapsed={sidebarCollapsed()}
                   mobileSidebarOpen={mobileSidebarOpen()}

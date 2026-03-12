@@ -83,7 +83,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
       <Show when={props.mobileSidebarOpen}>
         <button
           aria-label="Close menu overlay"
-          class="fixed inset-0 z-40 bg-slate-950/50 md:hidden"
+          class="motion-enter-fade fixed inset-0 z-40 bg-slate-950/50 md:hidden"
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               props.onSetMobileSidebarOpen(false);
@@ -92,21 +92,21 @@ export function DashboardScreen(props: DashboardScreenProps) {
           onClick={() => props.onSetMobileSidebarOpen(false)}
           type="button"
         />
-        <aside aria-label="Mobile sidebar" aria-modal="true" class="surface-panel fixed left-0 top-0 z-50 h-full w-72 rounded-none border-r p-4 md:hidden" role="dialog">
+        <aside aria-label="Mobile sidebar" aria-modal="true" class="motion-enter-slide-left motion-surface surface-panel fixed left-0 top-0 z-50 h-full w-72 rounded-none border-r p-4 md:hidden" role="dialog">
           <Sidebar tabs={tabs} activeTab={activeTab()} collapsed={false} onSelectTab={handleSelectTab} />
         </aside>
       </Show>
 
       <div class="grid min-h-0 flex-1 gap-3 md:grid-cols-[auto_1fr] md:gap-4">
         <aside
-          class={`surface-panel hidden h-full min-h-0 overflow-y-auto p-2.5 shadow-sm md:block md:p-3 ${
+          class={`motion-enter-fade-up motion-surface surface-panel hidden h-full min-h-0 overflow-y-auto p-2.5 shadow-sm md:block md:p-3 ${
             props.sidebarCollapsed ? "w-16 md:w-20" : "w-56 md:w-64 lg:w-72"
           }`}
         >
           <Sidebar tabs={tabs} activeTab={activeTab()} collapsed={props.sidebarCollapsed} onSelectTab={handleSelectTab} />
         </aside>
 
-        <div class="surface-panel flex h-full min-h-0 flex-col p-3.5 shadow-sm sm:p-4 md:p-5">
+        <div class="motion-enter-fade-up motion-stagger-1 motion-surface surface-panel flex h-full min-h-0 flex-col p-3.5 shadow-sm sm:p-4 md:p-5">
           <div class="mb-4 border-b pb-3" style={{ "border-color": "var(--color-border-muted)" }}>
             <h3 class="text-xl font-semibold">{pageTitle()}</h3>
             <p class="text-muted mt-1 text-sm">Manage your product data and workspace from one place.</p>

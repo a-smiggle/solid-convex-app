@@ -1,6 +1,6 @@
 export function AuthPromo() {
   return (
-    <div class="surface-muted hidden p-8 shadow-soft lg:block">
+    <div class="motion-enter-fade-up motion-stagger-1 motion-surface surface-muted hidden p-8 shadow-soft lg:block">
       <h2 class="text-3xl font-semibold leading-tight">Launch your Convex-backed SaaS in days, not weeks.</h2>
       <p class="text-muted mt-4">
         This starter gives you a clean auth and dashboard foundation. Wire these screens to Convex auth/actions and you are off.

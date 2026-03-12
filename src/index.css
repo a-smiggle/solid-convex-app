@@ -45,6 +45,12 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
+
+  --motion-duration-fast: 140ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 320ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark {
@@ -167,6 +173,97 @@ body {
   border-radius: var(--radius-lg);
 }
 
+.motion-transition {
+  transition-duration: var(--motion-duration-base);
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+.motion-surface {
+  transition-property: transform, opacity, box-shadow, background-color, border-color;
+  transition-duration: var(--motion-duration-base);
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+.motion-interactive {
+  transition-property: transform, background-color, border-color, color, box-shadow;
+  transition-duration: var(--motion-duration-fast);
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+.motion-interactive:hover {
+  transform: translateY(-1px);
+}
+
+.motion-enter-fade {
+  animation: motion-enter-fade var(--motion-duration-base) var(--motion-ease-standard) both;
+}
+
+.motion-enter-fade-up {
+  animation: motion-enter-fade-up var(--motion-duration-slow) var(--motion-ease-emphasis) both;
+}
+
+.motion-enter-slide-left {
+  animation: motion-enter-slide-left var(--motion-duration-slow) var(--motion-ease-emphasis) both;
+}
+
+.motion-enter-slide-down {
+  animation: motion-enter-slide-down var(--motion-duration-base) var(--motion-ease-emphasis) both;
+}
+
+.motion-stagger-1 {
+  animation-delay: 50ms;
+}
+
+.motion-stagger-2 {
+  animation-delay: 100ms;
+}
+
+@keyframes motion-enter-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes motion-enter-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-enter-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes motion-enter-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .text-muted {
   color: var(--color-text-muted);
 }
@@ -275,4 +372,19 @@ body {
 
 .interactive-item-danger:hover {
   background: color-mix(in srgb, var(--color-danger-surface) 65%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-interactive:hover {
+    transform: none;
+  }
 }
