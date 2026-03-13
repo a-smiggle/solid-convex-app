@@ -1,5 +1,6 @@
 import { For } from "solid-js";
 import { dashboardStats, pipelineItems } from "../../data/dashboard";
+import { ConvexSampleTableCard } from "./ConvexSampleTableCard";
 
 export function DashboardOverviewPage() {
   return (
@@ -36,6 +37,8 @@ export function DashboardOverviewPage() {
           </For>
         </div>
       </div>
+
+      <ConvexSampleTableCard />
     </section>
   );
 }

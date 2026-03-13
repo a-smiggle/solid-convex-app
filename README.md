@@ -15,6 +15,27 @@ pnpm install
 pnpm dev
 ```
 
+## Convex Sample Connection
+
+This repository now includes a minimal Convex sample table integration.
+
+1. Add your Convex URL in `.env.local`:
+
+```bash
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+```
+
+`CONVEX_URL` also works because Vite is configured to expose `CONVEX_` variables.
+
+2. Start Convex and the app in separate terminals:
+
+```bash
+pnpm convex:dev
+pnpm dev
+```
+
+3. Open the Dashboard tab and use the "Convex Sample Table" card to insert and view rows.
+
 ## Build
 
 ```bash

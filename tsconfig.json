@@ -13,5 +13,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src", "vite.config.ts", "tailwind.config.ts"]
+  "include": ["src", "convex", "vite.config.ts", "tailwind.config.ts"]
 }
