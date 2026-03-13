@@ -15,6 +15,50 @@ const DashboardScreen = lazy(() => import("./components/screens/DashboardScreen"
 
 const screenValues: Screen[] = ["login", "signup", "reset", "dashboard"];
 
+function readResetTokenFromUrl(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const token = new URLSearchParams(window.location.search).get("resetToken");
+  if (!token) {
+    return null;
+  }
+
+  const normalizedToken = token.trim();
+  return normalizedToken ? normalizedToken : null;
+}
+
+function isResetPathFromUrl() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const pathname = window.location.pathname.toLowerCase();
+  return pathname === "/reset" || pathname.startsWith("/reset/");
+}
+
+function updateResetTokenInUrl(token: string | null) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const url = new URL(window.location.href);
+
+  if (token) {
+    url.searchParams.set("resetToken", token);
+  } else {
+    url.searchParams.delete("resetToken");
+
+    // Normalize back to app root after completing or cancelling reset flow.
+    if (url.pathname.toLowerCase() === "/reset") {
+      url.pathname = "/";
+    }
+  }
+
+  window.history.replaceState({}, "", url.toString());
+}
+
 function getInitialSidebarCollapsed(): boolean {
   if (typeof window === "undefined") {
     return false;
@@ -29,6 +73,10 @@ function getInitialScreen(): Screen {
     return "login";
   }
 
+  if (readResetTokenFromUrl() || isResetPathFromUrl()) {
+    return "reset";
+  }
+
   const storedScreen = window.sessionStorage.getItem("ui-screen");
   if (storedScreen && screenValues.includes(storedScreen as Screen)) {
     return storedScreen as Screen;
@@ -39,6 +87,7 @@ function getInitialScreen(): Screen {
 
 function App() {
   const [screen, setScreen] = createSignal<Screen>(getInitialScreen());
+  const [resetToken, setResetToken] = createSignal<string | null>(readResetTokenFromUrl());
   const [theme, setTheme] = createSignal<Theme>("light");
   const [currentUser, setCurrentUser] = createSignal<AuthUser | null>(null);
   const [authReady, setAuthReady] = createSignal(false);
@@ -49,8 +98,11 @@ function App() {
   onMount(async () => {
     const user = await restoreAuthSession();
     setCurrentUser(user);
+    setResetToken(readResetTokenFromUrl());
 
-    if (user) {
+    if (resetToken() || isResetPathFromUrl()) {
+      setScreen("reset");
+    } else if (user) {
       setScreen("dashboard");
     } else if (screen() === "dashboard") {
       setScreen("login");
@@ -164,7 +216,21 @@ function App() {
                   />
                 )}
 
-                {activeAuthScreen() === "reset" && <ResetScreen onBackToLogin={() => setScreen("login")} />}
+                {activeAuthScreen() === "reset" && (
+                  <ResetScreen
+                    resetToken={resetToken() ?? undefined}
+                    onBackToLogin={() => {
+                      setResetToken(null);
+                      updateResetTokenInUrl(null);
+                      setScreen("login");
+                    }}
+                    onResetComplete={() => {
+                      setResetToken(null);
+                      updateResetTokenInUrl(null);
+                      setScreen("login");
+                    }}
+                  />
+                )}
               </section>
             ) : (
               <div class="motion-enter-fade-up flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>

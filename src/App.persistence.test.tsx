@@ -39,4 +39,26 @@ describe("App persistence", () => {
       expect(window.sessionStorage.getItem("ui-screen")).toBe("signup");
     });
   });
+
+  it("opens reset completion flow when resetToken exists in URL params", async () => {
+    window.history.pushState({}, "", "/?resetToken=url-token");
+
+    render(() => <App />);
+
+    expect(await screen.findByText("Set New Password")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Update Password" })).toBeInTheDocument();
+
+    window.history.pushState({}, "", "/");
+  });
+
+  it("opens reset screen when app loads on /reset path", async () => {
+    window.history.pushState({}, "", "/reset");
+
+    render(() => <App />);
+
+    expect(await screen.findByText("Reset Password")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send Reset Link" })).toBeInTheDocument();
+
+    window.history.pushState({}, "", "/");
+  });
 });

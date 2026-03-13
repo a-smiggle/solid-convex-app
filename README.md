@@ -45,7 +45,7 @@ Set these environment variables in your Convex deployment (Dashboard -> Settings
 ```bash
 RESEND_API_KEY=your_resend_api_key
 RESET_EMAIL_FROM=you@yourdomain.com
-RESET_PASSWORD_URL=https://your-app.example/reset
+RESET_PASSWORD_URL=https://your-app.example
 RESET_EMAIL_APP_NAME=Solid + Convex
 ```
 
@@ -53,6 +53,8 @@ Notes:
 
 - `RESET_PASSWORD_URL` and `RESET_EMAIL_APP_NAME` are optional.
 - If `RESEND_API_KEY` is missing, reset requests are still accepted but email delivery is skipped.
+- When configured, reset emails include a one-time `resetToken` query param that expires after 30 minutes.
+- The app consumes the token from the URL and shows the password update form automatically.
 
 ## Build
 

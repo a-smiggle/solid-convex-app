@@ -10,7 +10,7 @@
 
 ## Next Planned Work
 
-- Implement secure password reset tokens with expiry and one-time use semantics.
-- Build a reset form flow that reads token params and writes a new password through Convex.
-- Harden auth storage and error handling (clearer user-safe messages, better retry behavior).
-- Add integration tests for request-reset and complete-reset end-to-end scenarios.
+- [x] Implement secure password reset tokens with expiry and one-time use semantics.
+- [x] Build a reset form flow that reads token params and writes a new password through Convex.
+- [x] Harden auth storage and error handling (clearer user-safe messages, better retry behavior).
+- [x] Add integration tests for request-reset and complete-reset end-to-end scenarios.

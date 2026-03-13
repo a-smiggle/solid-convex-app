@@ -15,6 +15,20 @@ function readEnv(name: string) {
   return trimmed ? trimmed : undefined;
 }
 
+function createResetUrl(baseUrl: string | undefined, token: string) {
+  if (!baseUrl) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(baseUrl);
+    url.searchParams.set("resetToken", token);
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
 function buildMessage(appName: string, resetUrl: string | undefined) {
   const subject = `${appName} password reset request`;
 
@@ -59,6 +73,7 @@ function buildMessage(appName: string, resetUrl: string | undefined) {
 export const sendPasswordResetEmail = internalActionGeneric({
   args: {
     email: v.string(),
+    resetToken: v.string(),
   },
   returns: v.null(),
   handler: async (_ctx, args) => {
@@ -70,7 +85,7 @@ export const sendPasswordResetEmail = internalActionGeneric({
 
     const from = readEnv("RESET_EMAIL_FROM") ?? "onboarding@resend.dev";
     const appName = readEnv("RESET_EMAIL_APP_NAME") ?? "Solid + Convex";
-    const resetUrl = readEnv("RESET_PASSWORD_URL");
+    const resetUrl = createResetUrl(readEnv("RESET_PASSWORD_URL"), args.resetToken);
     const recipient = args.email.trim().toLowerCase();
     const message = buildMessage(appName, resetUrl);
 

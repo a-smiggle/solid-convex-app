@@ -10,4 +10,9 @@ export const authApi = {
   getSession: "auth:getSession" as unknown as PublicQuery<{ token: string }, AuthUser | null>,
   signOut: "auth:signOut" as unknown as PublicMutation<{ token: string }, null>,
   requestPasswordReset: "auth:requestPasswordReset" as unknown as PublicMutation<{ email: string }, null>,
+  verifyPasswordResetToken: "auth:verifyPasswordResetToken" as unknown as PublicQuery<
+    { token: string },
+    { ok: true } | { ok: false; reason: string }
+  >,
+  completePasswordReset: "auth:completePasswordReset" as unknown as PublicMutation<{ token: string; password: string }, null>,
 };

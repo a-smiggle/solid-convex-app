@@ -32,6 +32,23 @@ function toErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function toSafeResetErrorMessage(error: unknown, fallback: string) {
+  if (!(error instanceof Error) || !error.message.trim()) {
+    return fallback;
+  }
+
+  if (
+    error.message.includes("expired") ||
+    error.message.includes("invalid") ||
+    error.message.includes("already been used") ||
+    error.message.includes("missing")
+  ) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 function readMockUser() {
   const rawUser = window.localStorage.getItem(AUTH_MOCK_USER_STORAGE_KEY);
   if (!rawUser) {
@@ -170,5 +187,48 @@ export async function requestPasswordResetEmail(email: string) {
     await client.mutation(authApi.requestPasswordReset, { email });
   } catch (error) {
     throw new Error(toErrorMessage(error, "Unable to request a reset link right now."));
+  }
+}
+
+export async function verifyPasswordResetToken(token: string) {
+  const normalizedToken = token.trim();
+  if (!normalizedToken) {
+    return {
+      ok: false,
+      reason: "missing_token",
+    } as const;
+  }
+
+  const client = ensureConvexAvailable();
+  if (!client) {
+    return {
+      ok: true,
+    } as const;
+  }
+
+  try {
+    return await client.query(authApi.verifyPasswordResetToken, { token: normalizedToken });
+  } catch {
+    return {
+      ok: false,
+      reason: "unknown",
+    } as const;
+  }
+}
+
+export async function completePasswordReset(input: { token: string; password: string }) {
+  const client = ensureConvexAvailable();
+
+  if (!client) {
+    return;
+  }
+
+  try {
+    await client.mutation(authApi.completePasswordReset, {
+      token: input.token,
+      password: input.password,
+    });
+  } catch (error) {
+    throw new Error(toSafeResetErrorMessage(error, "Unable to reset your password right now. Please request a new link."));
   }
 }
