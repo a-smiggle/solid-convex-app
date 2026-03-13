@@ -4,6 +4,7 @@ import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
 import { t } from "../../i18n";
+import { requestPasswordResetEmail } from "../../auth/client";
 
 type ResetScreenProps = {
   onBackToLogin: () => void;
@@ -14,6 +15,7 @@ export function ResetScreen(props: ResetScreenProps) {
   const [email, setEmail] = createSignal("");
   const [submitted, setSubmitted] = createSignal(false);
   const [emailSent, setEmailSent] = createSignal(false);
+  const [isLoading, setIsLoading] = createSignal(false);
 
   const emailError = createMemo(() => {
     if (!submitted()) {
@@ -24,7 +26,7 @@ export function ResetScreen(props: ResetScreenProps) {
     return emailPattern.test(email()) ? "" : "Enter a valid account email.";
   });
 
-  const handleSubmit = (event: SubmitEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     setSubmitted(true);
 
@@ -37,12 +39,25 @@ export function ResetScreen(props: ResetScreenProps) {
       return;
     }
 
-    setEmailSent(true);
-    pushToast({
-      type: "info",
-      title: t.auth.reset.toastInfoTitle,
-      description: t.auth.reset.toastInfoDescription,
-    });
+    setIsLoading(true);
+
+    try {
+      await requestPasswordResetEmail(email());
+      setEmailSent(true);
+      pushToast({
+        type: "info",
+        title: t.auth.reset.toastInfoTitle,
+        description: t.auth.reset.toastInfoDescription,
+      });
+    } catch (error) {
+      pushToast({
+        type: "error",
+        title: t.auth.reset.toastErrorTitle,
+        description: error instanceof Error ? error.message : t.auth.reset.toastErrorDescription,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,8 +74,8 @@ export function ResetScreen(props: ResetScreenProps) {
           type="email"
           value={email()}
         />
-        <Button variant="secondary" class="w-full" type="submit">
-          {t.auth.reset.submit}
+        <Button variant="secondary" class="w-full" disabled={isLoading()} type="submit">
+          {isLoading() ? t.auth.reset.submitting : t.auth.reset.submit}
         </Button>
         <Show when={emailSent()}>
           <p class="text-sm text-emerald-600 dark:text-emerald-400" role="status">

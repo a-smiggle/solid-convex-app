@@ -1,9 +1,19 @@
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import App from "./App";
+import { AUTH_MOCK_USER_STORAGE_KEY, AUTH_TOKEN_STORAGE_KEY } from "./auth/client";
 
 describe("App persistence", () => {
-  it("hydrates dashboard when ui-screen is stored in sessionStorage", async () => {
+  it("hydrates dashboard when ui-screen and auth session are stored", async () => {
     window.sessionStorage.setItem("ui-screen", "dashboard");
+    window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, "test-token");
+    window.localStorage.setItem(
+      AUTH_MOCK_USER_STORAGE_KEY,
+      JSON.stringify({
+        id: "test-user",
+        email: "user@example.com",
+        fullName: "Test User",
+      })
+    );
 
     render(() => <App />);
 

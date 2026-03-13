@@ -4,9 +4,11 @@ import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
 import { t } from "../../i18n";
+import { signInWithEmailPassword } from "../../auth/client";
+import type { AuthUser } from "../../types/auth";
 
 type LoginScreenProps = {
-  onLogin: () => void;
+  onLogin: (user: AuthUser) => void;
   onShowSignup: () => void;
   onShowReset: () => void;
 };
@@ -59,14 +61,28 @@ export function LoginScreen(props: LoginScreenProps) {
     }
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    pushToast({
-      type: "success",
-      title: t.auth.login.toastSuccessTitle,
-      description: t.auth.login.toastSuccessDescription,
-    });
-    props.onLogin();
-    setIsLoading(false);
+
+    try {
+      const user = await signInWithEmailPassword({
+        email: email(),
+        password: password(),
+      });
+
+      pushToast({
+        type: "success",
+        title: t.auth.login.toastSuccessTitle,
+        description: t.auth.login.toastSuccessDescription,
+      });
+      props.onLogin(user);
+    } catch (error) {
+      pushToast({
+        type: "error",
+        title: t.auth.login.toastErrorTitle,
+        description: error instanceof Error ? error.message : t.auth.login.toastErrorDescription,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

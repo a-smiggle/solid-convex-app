@@ -4,9 +4,12 @@ import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
 import { t } from "../../i18n";
+import { signUpWithEmailPassword } from "../../auth/client";
+import type { AuthUser } from "../../types/auth";
 
 type SignUpScreenProps = {
   onBackToLogin: () => void;
+  onSignUp: (user: AuthUser) => void;
 };
 
 export function SignUpScreen(props: SignUpScreenProps) {
@@ -16,6 +19,7 @@ export function SignUpScreen(props: SignUpScreenProps) {
   const [password, setPassword] = createSignal("");
   const [submitted, setSubmitted] = createSignal(false);
   const [created, setCreated] = createSignal(false);
+  const [isLoading, setIsLoading] = createSignal(false);
 
   const fullNameError = createMemo(() => {
     if (!submitted()) {
@@ -42,7 +46,7 @@ export function SignUpScreen(props: SignUpScreenProps) {
     return password().length >= 8 ? "" : "Password must be at least 8 characters.";
   });
 
-  const handleSubmit = (event: SubmitEvent) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     setSubmitted(true);
 
@@ -55,12 +59,31 @@ export function SignUpScreen(props: SignUpScreenProps) {
       return;
     }
 
-    setCreated(true);
-    pushToast({
-      type: "success",
-      title: t.auth.signup.toastSuccessTitle,
-      description: t.auth.signup.toastSuccessDescription,
-    });
+    setIsLoading(true);
+
+    try {
+      const user = await signUpWithEmailPassword({
+        fullName: fullName(),
+        email: email(),
+        password: password(),
+      });
+
+      setCreated(true);
+      pushToast({
+        type: "success",
+        title: t.auth.signup.toastSuccessTitle,
+        description: t.auth.signup.toastSuccessDescription,
+      });
+      props.onSignUp(user);
+    } catch (error) {
+      pushToast({
+        type: "error",
+        title: t.auth.signup.toastErrorTitle,
+        description: error instanceof Error ? error.message : t.auth.signup.toastErrorDescription,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -100,8 +123,8 @@ export function SignUpScreen(props: SignUpScreenProps) {
           type="password"
           value={password()}
         />
-        <Button variant="warning" class="w-full" type="submit">
-          {t.auth.signup.submit}
+        <Button variant="warning" class="w-full" disabled={isLoading()} type="submit">
+          {isLoading() ? t.auth.signup.submitting : t.auth.signup.submit}
         </Button>
         <Show when={created()}>
           <p class="text-sm text-emerald-600 dark:text-emerald-400" role="status">

@@ -36,6 +36,24 @@ pnpm dev
 
 3. Open the Dashboard tab and use the "Convex Sample Table" card to insert and view rows.
 
+## Forgot Password Email (Resend)
+
+Forgot-password requests now queue an internal Convex action that sends an email through Resend.
+
+Set these environment variables in your Convex deployment (Dashboard -> Settings -> Environment Variables):
+
+```bash
+RESEND_API_KEY=your_resend_api_key
+RESET_EMAIL_FROM=you@yourdomain.com
+RESET_PASSWORD_URL=https://your-app.example/reset
+RESET_EMAIL_APP_NAME=Solid + Convex
+```
+
+Notes:
+
+- `RESET_PASSWORD_URL` and `RESET_EMAIL_APP_NAME` are optional.
+- If `RESEND_API_KEY` is missing, reset requests are still accepted but email delivery is skipped.
+
 ## Build
 
 ```bash

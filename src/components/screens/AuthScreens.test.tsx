@@ -23,7 +23,6 @@ describe("Auth screen flows", () => {
   });
 
   it("submits login flow when form is valid", async () => {
-    vi.useFakeTimers();
     const onLogin = vi.fn();
 
     render(() => (
@@ -36,19 +35,15 @@ describe("Auth screen flows", () => {
     fireEvent.input(screen.getByLabelText("Password"), { target: { value: "password123" } });
     fireEvent.submit(screen.getByRole("button", { name: "Login" }).closest("form") as HTMLFormElement);
 
-    await vi.advanceTimersByTimeAsync(500);
-
     await waitFor(() => {
       expect(onLogin).toHaveBeenCalledTimes(1);
     });
-
-    vi.useRealTimers();
   });
 
   it("shows signup inline success on valid data", async () => {
     render(() => (
       <ToastProvider>
-        <SignUpScreen onBackToLogin={() => undefined} />
+        <SignUpScreen onBackToLogin={() => undefined} onSignUp={() => undefined} />
       </ToastProvider>
     ));
 
@@ -57,7 +52,7 @@ describe("Auth screen flows", () => {
     fireEvent.input(screen.getByLabelText("Password"), { target: { value: "password123" } });
     fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
 
-    expect(await screen.findByText(/Account details look good/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Redirecting to your dashboard/i)).toBeInTheDocument();
   });
 
   it("shows reset inline success on valid email", async () => {

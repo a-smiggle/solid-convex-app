@@ -1,8 +1,10 @@
-import { Suspense, createEffect, createSignal, lazy } from "solid-js";
+import { Suspense, createEffect, createSignal, lazy, onMount } from "solid-js";
 import { AppHeader } from "./components/layout/AppHeader";
 import { AppFooter } from "./components/layout/AppFooter";
 import { ToastProvider } from "./components/feedback/ToastProvider";
 import { t } from "./i18n";
+import { restoreAuthSession, signOutCurrentSession } from "./auth/client";
+import type { AuthUser } from "./types/auth";
 import type { Screen, Theme } from "./types/ui";
 
 const AuthPromo = lazy(() => import("./components/auth/AuthPromo").then((module) => ({ default: module.AuthPromo })));
@@ -38,9 +40,24 @@ function getInitialScreen(): Screen {
 function App() {
   const [screen, setScreen] = createSignal<Screen>(getInitialScreen());
   const [theme, setTheme] = createSignal<Theme>("light");
+  const [currentUser, setCurrentUser] = createSignal<AuthUser | null>(null);
+  const [authReady, setAuthReady] = createSignal(false);
   const [sidebarCollapsed, setSidebarCollapsed] = createSignal(getInitialSidebarCollapsed());
   const [mobileSidebarOpen, setMobileSidebarOpen] = createSignal(false);
-  const isDashboard = () => screen() === "dashboard";
+  const isDashboard = () => screen() === "dashboard" && Boolean(currentUser());
+
+  onMount(async () => {
+    const user = await restoreAuthSession();
+    setCurrentUser(user);
+
+    if (user) {
+      setScreen("dashboard");
+    } else if (screen() === "dashboard") {
+      setScreen("login");
+    }
+
+    setAuthReady(true);
+  });
 
   const handleSidebarToggle = () => {
     if (!isDashboard()) {
@@ -73,6 +90,24 @@ function App() {
     window.sessionStorage.setItem("ui-screen", screen());
   });
 
+  createEffect(() => {
+    if (!authReady()) {
+      return;
+    }
+
+    if (!currentUser() && screen() === "dashboard") {
+      setScreen("login");
+    }
+  });
+
+  const handleLogout = async () => {
+    await signOutCurrentSession();
+    setCurrentUser(null);
+    setScreen("login");
+  };
+
+  const activeAuthScreen = () => (screen() === "dashboard" ? "login" : screen());
+
   return (
     <ToastProvider>
       <div class="app-shell-bg flex min-h-screen flex-col">
@@ -90,7 +125,7 @@ function App() {
             showSidebarToggle={isDashboard()}
             onToggleSidebar={handleSidebarToggle}
             showLogout={isDashboard()}
-            onLogout={() => setScreen("login")}
+            onLogout={handleLogout}
           />
 
           <Suspense
@@ -100,21 +135,36 @@ function App() {
               </div>
             }
           >
-            {screen() !== "dashboard" ? (
+            {!authReady() ? (
+              <div class="surface-panel text-subtle grid min-h-[420px] place-items-center text-sm shadow-soft" id="app-main-content" tabIndex={-1}>
+                {t.app.loadingInterface}
+              </div>
+            ) : screen() !== "dashboard" ? (
               <section class="motion-enter-fade-up grid gap-6 lg:grid-cols-[1.1fr_1fr]" id="app-main-content" tabIndex={-1}>
                 <AuthPromo />
 
-                {screen() === "login" && (
+                {activeAuthScreen() === "login" && (
                   <LoginScreen
-                    onLogin={() => setScreen("dashboard")}
+                    onLogin={(user) => {
+                      setCurrentUser(user);
+                      setScreen("dashboard");
+                    }}
                     onShowReset={() => setScreen("reset")}
                     onShowSignup={() => setScreen("signup")}
                   />
                 )}
 
-                {screen() === "signup" && <SignUpScreen onBackToLogin={() => setScreen("login")} />}
+                {activeAuthScreen() === "signup" && (
+                  <SignUpScreen
+                    onBackToLogin={() => setScreen("login")}
+                    onSignUp={(user) => {
+                      setCurrentUser(user);
+                      setScreen("dashboard");
+                    }}
+                  />
+                )}
 
-                {screen() === "reset" && <ResetScreen onBackToLogin={() => setScreen("login")} />}
+                {activeAuthScreen() === "reset" && <ResetScreen onBackToLogin={() => setScreen("login")} />}
               </section>
             ) : (
               <div class="motion-enter-fade-up flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>
