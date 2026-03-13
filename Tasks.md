@@ -6,11 +6,7 @@
 - [ ] Add role-based access controls for settings actions
 - [ ] Add audit logging hooks for critical settings changes
 - [ ] Add optimistic UI + loading skeleton states for dashboard sections
-- [ ] Add test coverage for auth flows and persisted UI state
+- [x] Add test coverage for auth flows and persisted UI state
 
 ## Next Planned Work
 
-- [x] Implement secure password reset tokens with expiry and one-time use semantics.
-- [x] Build a reset form flow that reads token params and writes a new password through Convex.
-- [x] Harden auth storage and error handling (clearer user-safe messages, better retry behavior).
-- [x] Add integration tests for request-reset and complete-reset end-to-end scenarios.
