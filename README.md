@@ -56,6 +56,31 @@ Notes:
 - When configured, reset emails include a one-time `resetToken` query param that expires after 30 minutes.
 - The app consumes the token from the URL and shows the password update form automatically.
 
+## GitHub OAuth Login
+
+GitHub login is supported through an OAuth code flow exchanged on the Convex backend.
+
+Set these in your Convex deployment environment variables:
+
+```bash
+GITHUB_CLIENT_ID=your_github_oauth_app_client_id
+GITHUB_CLIENT_SECRET=your_github_oauth_app_client_secret
+```
+
+Set this in your app frontend `.env.local`:
+
+```bash
+GITHUB_CLIENT_ID=your_github_oauth_app_client_id
+```
+
+GitHub OAuth app callback URL should point to your app root (for local dev):
+
+```bash
+http://localhost:5173/
+```
+
+The app handles GitHub callback `code/state` params on load, creates a Convex session, then cleans callback params from the URL.
+
 ## Build
 
 ```bash

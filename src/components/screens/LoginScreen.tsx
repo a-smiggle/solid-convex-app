@@ -4,7 +4,7 @@ import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
 import { t } from "../../i18n";
-import { signInWithEmailPassword } from "../../auth/client";
+import { signInWithEmailPassword, startGitHubSignIn } from "../../auth/client";
 import type { AuthUser } from "../../types/auth";
 
 type LoginScreenProps = {
@@ -19,6 +19,7 @@ export function LoginScreen(props: LoginScreenProps) {
   const [password, setPassword] = createSignal("");
   const [submitted, setSubmitted] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
+  const [isGitHubLoading, setIsGitHubLoading] = createSignal(false);
 
   const emailError = createMemo(() => {
     if (!submitted()) {
@@ -85,6 +86,21 @@ export function LoginScreen(props: LoginScreenProps) {
     }
   };
 
+  const handleGitHubSignIn = () => {
+    setIsGitHubLoading(true);
+
+    try {
+      startGitHubSignIn();
+    } catch (error) {
+      setIsGitHubLoading(false);
+      pushToast({
+        type: "error",
+        title: t.auth.login.githubErrorTitle,
+        description: error instanceof Error ? error.message : t.auth.login.githubErrorDescription,
+      });
+    }
+  };
+
   return (
     <AuthCard title={t.auth.login.title} subtitle={t.auth.login.subtitle}>
       <form class="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -113,6 +129,9 @@ export function LoginScreen(props: LoginScreenProps) {
         />
         <Button class="w-full" disabled={isLoading()} type="submit">
           {isLoading() ? t.auth.login.submitting : t.auth.login.submit}
+        </Button>
+        <Button variant="secondary" class="w-full" disabled={isLoading() || isGitHubLoading()} onClick={handleGitHubSignIn} type="button">
+          {isGitHubLoading() ? t.auth.login.githubSubmitting : t.auth.login.githubSubmit}
         </Button>
       </form>
       <div class="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:justify-between">

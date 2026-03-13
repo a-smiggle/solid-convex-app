@@ -1,4 +1,4 @@
-import { mutationGeneric, queryGeneric } from "convex/server";
+import { actionGeneric, internalMutationGeneric, mutationGeneric, queryGeneric } from "convex/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
@@ -40,6 +40,27 @@ function createSessionToken(userId: string) {
 function createPasswordResetToken() {
   const values = crypto.getRandomValues(new Uint8Array(24));
   return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+function readEnv(name: string) {
+  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  const value = env?.[name];
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function normalizeGitHubName(name: string | null | undefined, fallbackEmail: string) {
+  const trimmed = (name ?? "").trim();
+  if (trimmed.length >= 2) {
+    return trimmed;
+  }
+
+  const localPart = fallbackEmail.split("@")[0] ?? "GitHub User";
+  return localPart.length >= 2 ? localPart : "GitHub User";
 }
 
 export const signUp = mutationGeneric({
@@ -178,6 +199,199 @@ export const signOut = mutationGeneric({
     }
 
     return null;
+  },
+});
+
+export const upsertGitHubUserSession = internalMutationGeneric({
+  args: {
+    githubId: v.string(),
+    email: v.string(),
+    fullName: v.string(),
+  },
+  returns: authResultValidator,
+  handler: async (ctx, args) => {
+    const normalizedEmail = normalizeEmail(args.email);
+    const normalizedGithubId = args.githubId.trim();
+    const normalizedFullName = normalizeGitHubName(args.fullName, normalizedEmail);
+
+    let user = await ctx.db.query("users").withIndex("by_github_id", (q) => q.eq("githubId", normalizedGithubId)).unique();
+    const now = Date.now();
+
+    if (user) {
+      await ctx.db.patch(user._id, {
+        email: normalizedEmail,
+        fullName: normalizedFullName,
+        githubId: normalizedGithubId,
+        updatedAt: now,
+      });
+
+      user = {
+        ...user,
+        email: normalizedEmail,
+        fullName: normalizedFullName,
+        githubId: normalizedGithubId,
+      };
+    } else {
+      const existingByEmail = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", normalizedEmail)).unique();
+
+      if (existingByEmail) {
+        await ctx.db.patch(existingByEmail._id, {
+          githubId: normalizedGithubId,
+          fullName: normalizedFullName,
+          updatedAt: now,
+        });
+
+        user = {
+          ...existingByEmail,
+          fullName: normalizedFullName,
+          githubId: normalizedGithubId,
+        };
+      } else {
+        const userId = await ctx.db.insert("users", {
+          fullName: normalizedFullName,
+          email: normalizedEmail,
+          githubId: normalizedGithubId,
+          // Password remains required by schema for email/password users.
+          passwordDigest: `github-oauth-${createPasswordResetToken()}`,
+          createdAt: now,
+          updatedAt: now,
+        });
+
+        user = {
+          _id: userId,
+          fullName: normalizedFullName,
+          email: normalizedEmail,
+          githubId: normalizedGithubId,
+        };
+      }
+    }
+
+    const token = createSessionToken(String(user._id));
+    await ctx.db.insert("sessions", {
+      userId: user._id,
+      token,
+      expiresAt: now + SESSION_TTL_MS,
+      createdAt: now,
+    });
+
+    return {
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+      },
+    };
+  },
+});
+
+export const signInWithGitHub = actionGeneric({
+  args: {
+    code: v.string(),
+    redirectUri: v.string(),
+  },
+  returns: authResultValidator,
+  handler: async (ctx, args) => {
+    const clientId = readEnv("GITHUB_CLIENT_ID");
+    const clientSecret = readEnv("GITHUB_CLIENT_SECRET");
+
+    if (!clientId || !clientSecret) {
+      throw new Error("GitHub OAuth is not configured on the server.");
+    }
+
+    const code = args.code.trim();
+    if (!code) {
+      throw new Error("GitHub authorization code is missing.");
+    }
+
+    const redirectUri = args.redirectUri.trim();
+    if (!redirectUri) {
+      throw new Error("GitHub redirect URI is missing.");
+    }
+
+    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        redirect_uri: redirectUri,
+      }).toString(),
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error("GitHub token exchange failed.");
+    }
+
+    const tokenPayload = (await tokenResponse.json()) as {
+      access_token?: string;
+      error?: string;
+      error_description?: string;
+    };
+
+    if (!tokenPayload.access_token) {
+      throw new Error(tokenPayload.error_description ?? tokenPayload.error ?? "GitHub access token is missing.");
+    }
+
+    const accessToken = tokenPayload.access_token;
+
+    const [userResponse, emailsResponse] = await Promise.all([
+      fetch("https://api.github.com/user", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "solid-convex-app",
+        },
+      }),
+      fetch("https://api.github.com/user/emails", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "solid-convex-app",
+        },
+      }),
+    ]);
+
+    if (!userResponse.ok) {
+      throw new Error("Unable to load your GitHub profile.");
+    }
+
+    const githubUser = (await userResponse.json()) as {
+      id?: number;
+      login?: string;
+      name?: string | null;
+      email?: string | null;
+    };
+
+    const githubEmails = emailsResponse.ok
+      ? ((await emailsResponse.json()) as Array<{ email: string; primary?: boolean; verified?: boolean }>)
+      : [];
+
+    const preferredEmail =
+      githubEmails.find((entry) => entry.primary && entry.verified)?.email ??
+      githubEmails.find((entry) => entry.verified)?.email ??
+      githubEmails[0]?.email ??
+      githubUser.email ??
+      undefined;
+
+    if (!preferredEmail) {
+      throw new Error("GitHub did not return an email for this account.");
+    }
+
+    const githubId = String(githubUser.id ?? "").trim();
+    if (!githubId) {
+      throw new Error("GitHub profile id is missing.");
+    }
+
+    return await ctx.runMutation("auth:upsertGitHubUserSession" as any, {
+      githubId,
+      email: preferredEmail,
+      fullName: githubUser.name ?? githubUser.login ?? preferredEmail,
+    });
   },
 });
 

@@ -3,6 +3,7 @@ import type { AuthResult, AuthUser } from "../types/auth";
 
 type PublicQuery<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<"query", "public", Args, ReturnValue>;
 type PublicMutation<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<"mutation", "public", Args, ReturnValue>;
+type PublicAction<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<"action", "public", Args, ReturnValue>;
 
 export const authApi = {
   signUp: "auth:signUp" as unknown as PublicMutation<{ fullName: string; email: string; password: string }, AuthResult>,
@@ -15,4 +16,5 @@ export const authApi = {
     { ok: true } | { ok: false; reason: string }
   >,
   completePasswordReset: "auth:completePasswordReset" as unknown as PublicMutation<{ token: string; password: string }, null>,
+  signInWithGitHub: "auth:signInWithGitHub" as unknown as PublicAction<{ code: string; redirectUri: string }, AuthResult>,
 };

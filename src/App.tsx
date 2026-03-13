@@ -3,7 +3,7 @@ import { AppHeader } from "./components/layout/AppHeader";
 import { AppFooter } from "./components/layout/AppFooter";
 import { ToastProvider } from "./components/feedback/ToastProvider";
 import { t } from "./i18n";
-import { restoreAuthSession, signOutCurrentSession } from "./auth/client";
+import { completeGitHubSignInFromUrl, restoreAuthSession, signOutCurrentSession } from "./auth/client";
 import type { AuthUser } from "./types/auth";
 import type { Screen, Theme } from "./types/ui";
 
@@ -96,7 +96,18 @@ function App() {
   const isDashboard = () => screen() === "dashboard" && Boolean(currentUser());
 
   onMount(async () => {
-    const user = await restoreAuthSession();
+    let user: AuthUser | null = null;
+
+    try {
+      user = await completeGitHubSignInFromUrl();
+    } catch {
+      user = null;
+    }
+
+    if (!user) {
+      user = await restoreAuthSession();
+    }
+
     setCurrentUser(user);
     setResetToken(readResetTokenFromUrl());
 

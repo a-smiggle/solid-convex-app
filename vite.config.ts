@@ -3,7 +3,7 @@ import solidPlugin from "vite-plugin-solid";
 
 export default defineConfig({
   plugins: [solidPlugin()],
-  envPrefix: ["VITE_", "CONVEX_"],
+  envPrefix: ["VITE_", "CONVEX_", "GITHUB_"],
   server: {
     port: 5173,
   },
