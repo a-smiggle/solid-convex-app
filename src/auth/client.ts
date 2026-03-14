@@ -1,5 +1,6 @@
 import { authApi } from "../convex/authApi";
 import { getConvexClient, getConvexUrl } from "../convex/client";
+import { getUserSafeErrorMessage, runApiAction } from "../lib/api";
 import type { AuthResult, AuthUser } from "../types/auth";
 
 export const AUTH_TOKEN_STORAGE_KEY = "auth-session-token";
@@ -23,14 +24,6 @@ function storeSession(result: AuthResult) {
 function clearSession() {
   window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
   window.localStorage.removeItem(AUTH_MOCK_USER_STORAGE_KEY);
-}
-
-function toErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message;
-  }
-
-  return fallback;
 }
 
 function toSafeResetErrorMessage(error: unknown, fallback: string) {
@@ -142,11 +135,13 @@ export async function signUpWithEmailPassword(input: { fullName: string; email: 
   }
 
   try {
-    const result = await client.mutation(authApi.signUp, input);
+    const result = await runApiAction(() => client.mutation(authApi.signUp, input), {
+      fallbackMessage: "Unable to create your account.",
+    });
     storeSession(result);
     return result.user;
   } catch (error) {
-    throw new Error(toErrorMessage(error, "Unable to create your account."));
+    throw new Error(getUserSafeErrorMessage(error, "Unable to create your account."));
   }
 }
 
@@ -160,11 +155,13 @@ export async function signInWithEmailPassword(input: { email: string; password: 
   }
 
   try {
-    const result = await client.mutation(authApi.signIn, input);
+    const result = await runApiAction(() => client.mutation(authApi.signIn, input), {
+      fallbackMessage: "Unable to sign in with those credentials.",
+    });
     storeSession(result);
     return result.user;
   } catch (error) {
-    throw new Error(toErrorMessage(error, "Unable to sign in with those credentials."));
+    throw new Error(getUserSafeErrorMessage(error, "Unable to sign in with those credentials."));
   }
 }
 
@@ -216,9 +213,12 @@ export async function requestPasswordResetEmail(email: string) {
   }
 
   try {
-    await client.mutation(authApi.requestPasswordReset, { email });
+    await runApiAction(() => client.mutation(authApi.requestPasswordReset, { email }), {
+      fallbackMessage: "Unable to request a reset link right now.",
+      retries: 1,
+    });
   } catch (error) {
-    throw new Error(toErrorMessage(error, "Unable to request a reset link right now."));
+    throw new Error(getUserSafeErrorMessage(error, "Unable to request a reset link right now."));
   }
 }
 
@@ -273,16 +273,22 @@ export async function completeGitHubSignInFromUrl() {
   }
 
   try {
-    const result = await client.action(authApi.signInWithGitHub, {
-      code,
-      redirectUri: getGitHubRedirectUri(),
-    });
+    const result = await runApiAction(
+      () =>
+        client.action(authApi.signInWithGitHub, {
+          code,
+          redirectUri: getGitHubRedirectUri(),
+        }),
+      {
+        fallbackMessage: "Unable to sign in with GitHub right now.",
+      }
+    );
     storeSession(result);
     clearGitHubOAuthParams();
     return result.user;
   } catch (error) {
     clearGitHubOAuthParams();
-    throw new Error(toErrorMessage(error, "Unable to sign in with GitHub right now."));
+    throw new Error(getUserSafeErrorMessage(error, "Unable to sign in with GitHub right now."));
   }
 }
 
@@ -303,7 +309,9 @@ export async function verifyPasswordResetToken(token: string) {
   }
 
   try {
-    return await client.query(authApi.verifyPasswordResetToken, { token: normalizedToken });
+    return await runApiAction(() => client.query(authApi.verifyPasswordResetToken, { token: normalizedToken }), {
+      fallbackMessage: "Unable to verify reset token right now.",
+    });
   } catch {
     return {
       ok: false,
@@ -320,10 +328,16 @@ export async function completePasswordReset(input: { token: string; password: st
   }
 
   try {
-    await client.mutation(authApi.completePasswordReset, {
-      token: input.token,
-      password: input.password,
-    });
+    await runApiAction(
+      () =>
+        client.mutation(authApi.completePasswordReset, {
+          token: input.token,
+          password: input.password,
+        }),
+      {
+        fallbackMessage: "Unable to reset your password right now. Please request a new link.",
+      }
+    );
   } catch (error) {
     throw new Error(toSafeResetErrorMessage(error, "Unable to reset your password right now. Please request a new link."));
   }

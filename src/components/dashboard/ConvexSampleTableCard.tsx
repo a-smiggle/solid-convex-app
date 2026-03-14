@@ -1,5 +1,6 @@
 import { Show, createMemo, createResource, createSignal } from "solid-js";
 import { getConvexClient, getConvexUrl } from "../../convex/client";
+import { runApiAction } from "../../lib/api";
 import { sampleRowsApi } from "../../convex/sampleRowsApi";
 import { useToast } from "../feedback/ToastProvider";
 import { Button } from "../ui/Button";
@@ -31,7 +32,10 @@ export function ConvexSampleTableCard() {
       return [];
     }
 
-    return await client.query(sampleRowsApi.list, {});
+    return await runApiAction(() => client.query(sampleRowsApi.list, {}), {
+      fallbackMessage: "Unable to load rows from Convex right now.",
+      retries: 1,
+    });
   });
 
   const tableRows = createMemo(() =>
@@ -53,7 +57,10 @@ export function ConvexSampleTableCard() {
     setErrorMessage(null);
 
     try {
-      await client.mutation(sampleRowsApi.add, { label: buildSampleLabel() });
+      await runApiAction(() => client.mutation(sampleRowsApi.add, { label: buildSampleLabel() }), {
+        fallbackMessage: "Convex request failed. Confirm convex dev is running and the deployment URL is valid.",
+        retries: 1,
+      });
       await refetch();
       pushToast({
         title: "Row inserted",
