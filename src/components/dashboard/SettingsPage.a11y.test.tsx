@@ -35,10 +35,10 @@ describe("SettingsPage accessibility", () => {
     billingTab.focus();
 
     fireEvent.keyDown(billingTab, { key: "ArrowRight" });
-    expect(screen.getByRole("tab", { name: "Profile" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Team" })).toHaveAttribute("aria-selected", "true");
 
-    const profileTab = screen.getByRole("tab", { name: "Profile" });
-    fireEvent.keyDown(profileTab, { key: "End" });
+    const teamTab = screen.getByRole("tab", { name: "Team" });
+    fireEvent.keyDown(teamTab, { key: "End" });
     expect(screen.getByRole("tab", { name: "Audit Log" })).toHaveAttribute("aria-selected", "true");
 
     const auditTab = screen.getByRole("tab", { name: "Audit Log" });

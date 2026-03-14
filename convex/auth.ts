@@ -16,6 +16,31 @@ const authResultValidator = v.object({
   user: sessionUserValidator,
 });
 
+const userSettingsValidator = v.object({
+  email: v.string(),
+  fullName: v.string(),
+  githubLinked: v.boolean(),
+});
+
+async function getUserFromSessionToken(ctx: { db: any }, tokenInput: string) {
+  const token = tokenInput.trim();
+  if (!token) {
+    return null;
+  }
+
+  const session = await ctx.db.query("sessions").withIndex("by_token", (q: any) => q.eq("token", token)).unique();
+  if (!session || session.expiresAt < Date.now()) {
+    return null;
+  }
+
+  const user = await ctx.db.get(session.userId);
+  if (!user) {
+    return null;
+  }
+
+  return user;
+}
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
@@ -197,6 +222,85 @@ export const signOut = mutationGeneric({
     if (session) {
       await ctx.db.delete(session._id);
     }
+
+    return null;
+  },
+});
+
+export const getUserSettings = queryGeneric({
+  args: {
+    token: v.string(),
+  },
+  returns: v.union(userSettingsValidator, v.null()),
+  handler: async (ctx, args) => {
+    const user = await getUserFromSessionToken(ctx, args.token);
+    if (!user) {
+      return null;
+    }
+
+    return {
+      email: user.email,
+      fullName: user.fullName,
+      githubLinked: Boolean(user.githubId),
+    };
+  },
+});
+
+export const updateCurrentUserProfile = mutationGeneric({
+  args: {
+    token: v.string(),
+    fullName: v.string(),
+  },
+  returns: sessionUserValidator,
+  handler: async (ctx, args) => {
+    const user = await getUserFromSessionToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+
+    const fullName = args.fullName.trim();
+    if (fullName.length < 2) {
+      throw new Error("Please enter your full name.");
+    }
+
+    await ctx.db.patch(user._id, {
+      fullName,
+      updatedAt: Date.now(),
+    });
+
+    return {
+      id: user._id,
+      email: user.email,
+      fullName,
+    };
+  },
+});
+
+export const changeCurrentUserPassword = mutationGeneric({
+  args: {
+    token: v.string(),
+    currentPassword: v.string(),
+    newPassword: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await getUserFromSessionToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+
+    if (args.newPassword.length < 8) {
+      throw new Error("Password must be at least 8 characters.");
+    }
+
+    if (hashCredential(user.email, args.currentPassword) !== user.passwordDigest) {
+      throw new Error("Current password is incorrect.");
+    }
+
+    await ctx.db.patch(user._id, {
+      passwordDigest: hashCredential(user.email, args.newPassword),
+      updatedAt: Date.now(),
+    });
 
     return null;
   },

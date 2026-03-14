@@ -7,10 +7,25 @@ export const AUTH_TOKEN_STORAGE_KEY = "auth-session-token";
 export const AUTH_MOCK_USER_STORAGE_KEY = "auth-mock-user";
 export const AUTH_GITHUB_STATE_STORAGE_KEY = "auth-github-oauth-state";
 
+export type CurrentUserSettings = {
+  email: string;
+  fullName: string;
+  githubLinked: boolean;
+};
+
 const isTestMode = import.meta.env.MODE === "test";
 
 function readStoredToken() {
   return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+}
+
+function getRequiredSessionToken() {
+  const token = readStoredToken()?.trim() ?? "";
+  if (!token) {
+    throw new Error("Your session has expired. Please sign in again.");
+  }
+
+  return token;
 }
 
 function storeSession(result: AuthResult) {
@@ -188,6 +203,85 @@ export async function restoreAuthSession() {
     clearSession();
     return null;
   }
+}
+
+export async function getCurrentUserSettings() {
+  const token = getRequiredSessionToken();
+  const client = ensureConvexAvailable();
+
+  if (!client) {
+    const mockUser = readMockUser();
+    if (!mockUser) {
+      throw new Error("Unable to load your profile right now.");
+    }
+
+    return {
+      email: mockUser.email,
+      fullName: mockUser.fullName,
+      githubLinked: false,
+    } satisfies CurrentUserSettings;
+  }
+
+  const result = await runApiAction(() => client.query(authApi.getUserSettings, { token }), {
+    fallbackMessage: "Unable to load your profile right now.",
+  });
+
+  if (!result) {
+    throw new Error("Your session has expired. Please sign in again.");
+  }
+
+  return result;
+}
+
+export async function updateCurrentUserProfile(input: { fullName: string }) {
+  const token = getRequiredSessionToken();
+  const client = ensureConvexAvailable();
+
+  if (!client) {
+    const mockUser = readMockUser();
+    if (!mockUser) {
+      throw new Error("Unable to update your profile right now.");
+    }
+
+    const updatedUser = {
+      ...mockUser,
+      fullName: input.fullName.trim(),
+    };
+    window.localStorage.setItem(AUTH_MOCK_USER_STORAGE_KEY, JSON.stringify(updatedUser));
+    return updatedUser;
+  }
+
+  return await runApiAction(
+    () =>
+      client.mutation(authApi.updateCurrentUserProfile, {
+        token,
+        fullName: input.fullName,
+      }),
+    {
+      fallbackMessage: "Unable to update your profile right now.",
+    }
+  );
+}
+
+export async function changeCurrentUserPassword(input: { currentPassword: string; newPassword: string }) {
+  const token = getRequiredSessionToken();
+  const client = ensureConvexAvailable();
+
+  if (!client) {
+    return;
+  }
+
+  await runApiAction(
+    () =>
+      client.mutation(authApi.changeCurrentUserPassword, {
+        token,
+        currentPassword: input.currentPassword,
+        newPassword: input.newPassword,
+      }),
+    {
+      fallbackMessage: "Unable to change your password right now.",
+    }
+  );
 }
 
 export async function signOutCurrentSession() {

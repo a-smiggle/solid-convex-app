@@ -10,7 +10,7 @@ const ContentTestPage = lazy(() => import("../dashboard/ContentTestPage").then((
 const SettingsPage = lazy(() => import("../dashboard/SettingsPage").then((module) => ({ default: module.SettingsPage })));
 
 const dashboardTabs: DashboardTab[] = ["dashboard", "content", "settings"];
-const settingsTabs: SettingsTab[] = ["billing", "profile", "team", "integrations", "security", "notifications", "apiKeys", "auditLog"];
+const settingsTabs: SettingsTab[] = ["billing", "team", "integrations", "security", "notifications", "apiKeys", "auditLog"];
 
 function getStoredDashboardTab(): DashboardTab {
   if (typeof window === "undefined") {

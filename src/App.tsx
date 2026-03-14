@@ -12,8 +12,9 @@ const LoginScreen = lazy(() => import("./components/screens/LoginScreen").then((
 const SignUpScreen = lazy(() => import("./components/screens/SignUpScreen").then((module) => ({ default: module.SignUpScreen })));
 const ResetScreen = lazy(() => import("./components/screens/ResetScreen").then((module) => ({ default: module.ResetScreen })));
 const DashboardScreen = lazy(() => import("./components/screens/DashboardScreen").then((module) => ({ default: module.DashboardScreen })));
+const UserSettingsPage = lazy(() => import("./components/dashboard/UserSettingsPage").then((module) => ({ default: module.UserSettingsPage })));
 
-const screenValues: Screen[] = ["login", "signup", "reset", "dashboard"];
+const screenValues: Screen[] = ["login", "signup", "reset", "dashboard", "user-settings"];
 
 function readResetTokenFromUrl(): string | null {
   if (typeof window === "undefined") {
@@ -93,7 +94,7 @@ function App() {
   const [authReady, setAuthReady] = createSignal(false);
   const [sidebarCollapsed, setSidebarCollapsed] = createSignal(getInitialSidebarCollapsed());
   const [mobileSidebarOpen, setMobileSidebarOpen] = createSignal(false);
-  const isDashboard = () => screen() === "dashboard" && Boolean(currentUser());
+  const isAuthenticatedArea = () => (screen() === "dashboard" || screen() === "user-settings") && Boolean(currentUser());
 
   onMount(async () => {
     let user: AuthUser | null = null;
@@ -115,7 +116,7 @@ function App() {
       setScreen("reset");
     } else if (user) {
       setScreen("dashboard");
-    } else if (screen() === "dashboard") {
+    } else if (screen() === "dashboard" || screen() === "user-settings") {
       setScreen("login");
     }
 
@@ -123,7 +124,7 @@ function App() {
   });
 
   const handleSidebarToggle = () => {
-    if (!isDashboard()) {
+    if (screen() !== "dashboard" || !currentUser()) {
       return;
     }
 
@@ -158,7 +159,7 @@ function App() {
       return;
     }
 
-    if (!currentUser() && screen() === "dashboard") {
+    if (!currentUser() && (screen() === "dashboard" || screen() === "user-settings")) {
       setScreen("login");
     }
   });
@@ -179,16 +180,17 @@ function App() {
         </a>
         <main
           class={`mx-auto flex min-h-0 w-full flex-1 flex-col px-4 py-5 sm:px-6 md:px-5 md:py-6 lg:px-8 ${
-            isDashboard() ? "max-w-none 2xl:max-w-[1600px]" : "max-w-6xl"
+            isAuthenticatedArea() ? "max-w-none 2xl:max-w-[1600px]" : "max-w-6xl"
           }`}
         >
           <AppHeader
             theme={theme()}
             onToggleTheme={() => setTheme(theme() === "dark" ? "light" : "dark")}
-            showSidebarToggle={isDashboard()}
+            showSidebarToggle={screen() === "dashboard" && Boolean(currentUser())}
             onToggleSidebar={handleSidebarToggle}
-            showLogout={isDashboard()}
+            showLogout={isAuthenticatedArea()}
             onLogout={handleLogout}
+            onUserSettings={() => setScreen("user-settings")}
           />
 
           <Suspense
@@ -202,7 +204,7 @@ function App() {
               <div class="surface-panel text-subtle grid min-h-[420px] place-items-center text-sm shadow-soft" id="app-main-content" tabIndex={-1}>
                 {t.app.loadingInterface}
               </div>
-            ) : screen() !== "dashboard" ? (
+            ) : screen() === "login" || screen() === "signup" || screen() === "reset" ? (
               <section class="motion-enter-fade-up grid gap-6 lg:grid-cols-[1.1fr_1fr]" id="app-main-content" tabIndex={-1}>
                 <AuthPromo />
 
@@ -243,13 +245,23 @@ function App() {
                   />
                 )}
               </section>
-            ) : (
+            ) : screen() === "dashboard" ? (
               <div class="motion-enter-fade-up flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>
                 <DashboardScreen
                   sidebarCollapsed={sidebarCollapsed()}
                   mobileSidebarOpen={mobileSidebarOpen()}
                   onSetMobileSidebarOpen={setMobileSidebarOpen}
                 />
+              </div>
+            ) : (
+              <div class="motion-enter-fade-up flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>
+                {currentUser() && (
+                  <UserSettingsPage
+                    currentUser={currentUser()!}
+                    onUserUpdated={(user) => setCurrentUser(user)}
+                    onBackToDashboard={() => setScreen("dashboard")}
+                  />
+                )}
               </div>
             )}
           </Suspense>

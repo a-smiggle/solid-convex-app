@@ -7,7 +7,6 @@ import { t } from "../../i18n";
 
 const settingsTabs: Array<{ id: SettingsTab; label: string }> = [
   { id: "billing", label: t.settings.tabs.billing },
-  { id: "profile", label: t.settings.tabs.profile },
   { id: "team", label: t.settings.tabs.team },
   { id: "integrations", label: t.settings.tabs.integrations },
   { id: "security", label: t.settings.tabs.security },
@@ -221,33 +220,6 @@ export function SettingsPage(props: SettingsPageProps) {
               </Button>
             </div>
             <DataTable caption="Billing invoice history" columns={invoiceColumns} rows={invoiceTableRows} emptyMessage="No invoices available." />
-          </div>
-        </article>
-      </Show>
-
-      <Show when={props.activeTab === "profile"}>
-        <article aria-labelledby={tabId("profile")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("profile")} role="tabpanel" tabIndex={0}>
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <h3 class="text-lg font-semibold">Profile</h3>
-            <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Edit profile")} type="button">
-                Edit Profile
-              </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Change password")} type="button">
-                Change Password
-              </Button>
-            </div>
-          </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Manage display name, email, and security preferences.</p>
-          <div class="mt-4 grid gap-3 sm:grid-cols-2">
-            <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-              <p class="text-sm text-slate-500 dark:text-slate-400">Display Name</p>
-              <p class="mt-1 font-medium">Anthony Smigielski</p>
-            </div>
-            <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-              <p class="text-sm text-slate-500 dark:text-slate-400">Primary Email</p>
-              <p class="mt-1 font-medium">anthony@company.com</p>
-            </div>
           </div>
         </article>
       </Show>
