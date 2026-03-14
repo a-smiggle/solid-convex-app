@@ -5,11 +5,9 @@ import { TextField } from "../ui/TextField";
 import { useToast } from "../feedback/ToastProvider";
 import { t } from "../../i18n";
 import { signUpWithEmailPassword } from "../../auth/client";
-import type { AuthUser } from "../../types/auth";
 
 type SignUpScreenProps = {
   onBackToLogin: () => void;
-  onSignUp: (user: AuthUser) => void;
 };
 
 export function SignUpScreen(props: SignUpScreenProps) {
@@ -62,7 +60,7 @@ export function SignUpScreen(props: SignUpScreenProps) {
     setIsLoading(true);
 
     try {
-      const user = await signUpWithEmailPassword({
+      await signUpWithEmailPassword({
         fullName: fullName(),
         email: email(),
         password: password(),
@@ -74,7 +72,6 @@ export function SignUpScreen(props: SignUpScreenProps) {
         title: t.auth.signup.toastSuccessTitle,
         description: t.auth.signup.toastSuccessDescription,
       });
-      props.onSignUp(user);
     } catch (error) {
       pushToast({
         type: "error",

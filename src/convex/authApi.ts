@@ -6,8 +6,9 @@ type PublicMutation<Args extends DefaultFunctionArgs, ReturnValue> = FunctionRef
 type PublicAction<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<"action", "public", Args, ReturnValue>;
 
 export const authApi = {
-  signUp: "auth:signUp" as unknown as PublicMutation<{ fullName: string; email: string; password: string }, AuthResult>,
+  signUp: "auth:signUp" as unknown as PublicMutation<{ fullName: string; email: string; password: string }, { status: "pending_verification" }>,
   signIn: "auth:signIn" as unknown as PublicMutation<{ email: string; password: string }, AuthResult>,
+  completeEmailVerification: "auth:completeEmailVerification" as unknown as PublicMutation<{ token: string }, null>,
   getSession: "auth:getSession" as unknown as PublicQuery<{ token: string }, AuthUser | null>,
   getUserSettings: "auth:getUserSettings" as unknown as PublicQuery<{ token: string }, { email: string; fullName: string; githubLinked: boolean } | null>,
   signOut: "auth:signOut" as unknown as PublicMutation<{ token: string }, null>,

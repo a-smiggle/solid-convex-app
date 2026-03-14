@@ -6,6 +6,7 @@ export default defineSchema({
     fullName: v.string(),
     email: v.string(),
     githubId: v.optional(v.string()),
+    emailVerifiedAt: v.optional(v.number()),
     passwordDigest: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -28,6 +29,16 @@ export default defineSchema({
   }).index("by_email", ["email"]),
 
   passwordResetTokens: defineTable({
+    userId: v.id("users"),
+    token: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    usedAt: v.optional(v.number()),
+  })
+    .index("by_token", ["token"])
+    .index("by_user_id", ["userId"]),
+
+  emailVerificationTokens: defineTable({
     userId: v.id("users"),
     token: v.string(),
     expiresAt: v.number(),

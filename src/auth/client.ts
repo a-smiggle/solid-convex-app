@@ -144,19 +144,47 @@ export async function signUpWithEmailPassword(input: { fullName: string; email: 
   const client = ensureConvexAvailable();
 
   if (!client) {
-    const mockResult = createMockAuthResult(input.email, input.fullName);
-    storeSession(mockResult);
-    return mockResult.user;
+    return;
   }
 
   try {
-    const result = await runApiAction(() => client.mutation(authApi.signUp, input), {
+    await runApiAction(() => client.mutation(authApi.signUp, input), {
       fallbackMessage: "Unable to create your account.",
     });
-    storeSession(result);
-    return result.user;
   } catch (error) {
     throw new Error(getUserSafeErrorMessage(error, "Unable to create your account."));
+  }
+}
+
+function clearEmailVerificationParams() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("verifyToken");
+  window.history.replaceState({}, "", url.toString());
+}
+
+export async function completeEmailVerificationFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("verifyToken")?.trim() ?? "";
+
+  if (!token) {
+    return false;
+  }
+
+  const client = ensureConvexAvailable();
+  if (!client) {
+    clearEmailVerificationParams();
+    return true;
+  }
+
+  try {
+    await runApiAction(() => client.mutation(authApi.completeEmailVerification, { token }), {
+      fallbackMessage: "Unable to verify this account right now.",
+    });
+    clearEmailVerificationParams();
+    return true;
+  } catch {
+    clearEmailVerificationParams();
+    return false;
   }
 }
 

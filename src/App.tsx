@@ -3,7 +3,7 @@ import { AppHeader } from "./components/layout/AppHeader";
 import { AppFooter } from "./components/layout/AppFooter";
 import { ToastProvider } from "./components/feedback/ToastProvider";
 import { t } from "./i18n";
-import { completeGitHubSignInFromUrl, restoreAuthSession, signOutCurrentSession } from "./auth/client";
+import { completeEmailVerificationFromUrl, completeGitHubSignInFromUrl, restoreAuthSession, signOutCurrentSession } from "./auth/client";
 import type { AuthUser } from "./types/auth";
 import type { Screen, Theme } from "./types/ui";
 
@@ -98,6 +98,8 @@ function App() {
 
   onMount(async () => {
     let user: AuthUser | null = null;
+
+    await completeEmailVerificationFromUrl();
 
     try {
       user = await completeGitHubSignInFromUrl();
@@ -222,10 +224,6 @@ function App() {
                 {activeAuthScreen() === "signup" && (
                   <SignUpScreen
                     onBackToLogin={() => setScreen("login")}
-                    onSignUp={(user) => {
-                      setCurrentUser(user);
-                      setScreen("dashboard");
-                    }}
                   />
                 )}
 

@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const PASSWORD_RESET_TTL_MS = 1000 * 60 * 30;
+const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 60 * 24;
 
 const sessionUserValidator = v.object({
   id: v.id("users"),
@@ -14,6 +15,10 @@ const sessionUserValidator = v.object({
 const authResultValidator = v.object({
   token: v.string(),
   user: sessionUserValidator,
+});
+
+const signUpResultValidator = v.object({
+  status: v.literal("pending_verification"),
 });
 
 const userSettingsValidator = v.object({
@@ -67,6 +72,11 @@ function createPasswordResetToken() {
   return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
 }
 
+function createEmailVerificationToken() {
+  const values = crypto.getRandomValues(new Uint8Array(24));
+  return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
 function readEnv(name: string) {
   const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
   const value = env?.[name];
@@ -94,7 +104,7 @@ export const signUp = mutationGeneric({
     email: v.string(),
     password: v.string(),
   },
-  returns: authResultValidator,
+  returns: signUpResultValidator,
   handler: async (ctx, args) => {
     const fullName = args.fullName.trim();
     if (fullName.length < 2) {
@@ -111,35 +121,53 @@ export const signUp = mutationGeneric({
     }
 
     const existingUser = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", email)).unique();
+    const now = Date.now();
+
+    let userId;
+
     if (existingUser) {
-      throw new Error("An account with this email already exists.");
+      if (existingUser.emailVerifiedAt) {
+        throw new Error("An account with this email already exists.");
+      }
+
+      await ctx.db.patch(existingUser._id, {
+        fullName,
+        passwordDigest: hashCredential(email, args.password),
+        updatedAt: now,
+      });
+      userId = existingUser._id;
+    } else {
+      userId = await ctx.db.insert("users", {
+        fullName,
+        email,
+        passwordDigest: hashCredential(email, args.password),
+        createdAt: now,
+        updatedAt: now,
+      });
     }
 
-    const now = Date.now();
-    const userId = await ctx.db.insert("users", {
-      fullName,
-      email,
-      passwordDigest: hashCredential(email, args.password),
+    const activeTokens = await ctx.db
+      .query("emailVerificationTokens")
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
+      .collect();
+    await Promise.all(activeTokens.map((token) => ctx.db.delete(token._id)));
+
+    const verificationToken = createEmailVerificationToken();
+    await ctx.db.insert("emailVerificationTokens", {
+      userId,
+      token: verificationToken,
+      expiresAt: now + EMAIL_VERIFICATION_TTL_MS,
       createdAt: now,
-      updatedAt: now,
     });
 
-    const token = createSessionToken(String(userId));
-    await ctx.db.insert("sessions", {
-      userId,
-      token,
-      expiresAt: now + SESSION_TTL_MS,
-      createdAt: now,
+    await ctx.scheduler.runAfter(0, "passwordResetEmail:sendEmailVerificationEmail" as any, {
+      email,
+      verificationToken,
     });
 
     return {
-      token,
-      user: {
-        id: userId,
-        email,
-        fullName,
-      },
-    };
+      status: "pending_verification",
+    } as const;
   },
 });
 
@@ -155,6 +183,10 @@ export const signIn = mutationGeneric({
 
     if (!user || user.passwordDigest !== hashCredential(email, args.password)) {
       throw new Error("Invalid email or password.");
+    }
+
+    if (!user.emailVerifiedAt) {
+      throw new Error("Please verify your email before signing in.");
     }
 
     const now = Date.now();
@@ -195,7 +227,7 @@ export const getSession = queryGeneric({
     }
 
     const user = await ctx.db.get(session.userId);
-    if (!user) {
+    if (!user || !user.emailVerifiedAt) {
       return null;
     }
 
@@ -326,6 +358,7 @@ export const upsertGitHubUserSession = internalMutationGeneric({
         email: normalizedEmail,
         fullName: normalizedFullName,
         githubId: normalizedGithubId,
+        emailVerifiedAt: user.emailVerifiedAt ?? now,
         updatedAt: now,
       });
 
@@ -334,6 +367,7 @@ export const upsertGitHubUserSession = internalMutationGeneric({
         email: normalizedEmail,
         fullName: normalizedFullName,
         githubId: normalizedGithubId,
+        emailVerifiedAt: user.emailVerifiedAt ?? now,
       };
     } else {
       const existingByEmail = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", normalizedEmail)).unique();
@@ -342,6 +376,7 @@ export const upsertGitHubUserSession = internalMutationGeneric({
         await ctx.db.patch(existingByEmail._id, {
           githubId: normalizedGithubId,
           fullName: normalizedFullName,
+          emailVerifiedAt: existingByEmail.emailVerifiedAt ?? now,
           updatedAt: now,
         });
 
@@ -349,12 +384,14 @@ export const upsertGitHubUserSession = internalMutationGeneric({
           ...existingByEmail,
           fullName: normalizedFullName,
           githubId: normalizedGithubId,
+          emailVerifiedAt: existingByEmail.emailVerifiedAt ?? now,
         };
       } else {
         const userId = await ctx.db.insert("users", {
           fullName: normalizedFullName,
           email: normalizedEmail,
           githubId: normalizedGithubId,
+          emailVerifiedAt: now,
           // Password remains required by schema for email/password users.
           passwordDigest: `github-oauth-${createPasswordResetToken()}`,
           createdAt: now,
@@ -386,6 +423,52 @@ export const upsertGitHubUserSession = internalMutationGeneric({
         fullName: user.fullName,
       },
     };
+  },
+});
+
+export const completeEmailVerification = mutationGeneric({
+  args: {
+    token: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const token = args.token.trim();
+    if (!token) {
+      throw new Error("Verification token is missing.");
+    }
+
+    const verificationToken = await ctx.db
+      .query("emailVerificationTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+
+    if (!verificationToken) {
+      throw new Error("This verification link is invalid.");
+    }
+
+    if (verificationToken.usedAt) {
+      throw new Error("This verification link has already been used.");
+    }
+
+    if (verificationToken.expiresAt <= Date.now()) {
+      throw new Error("This verification link has expired.");
+    }
+
+    const user = await ctx.db.get(verificationToken.userId);
+    if (!user) {
+      throw new Error("Unable to verify this account.");
+    }
+
+    const now = Date.now();
+    await ctx.db.patch(user._id, {
+      emailVerifiedAt: now,
+      updatedAt: now,
+    });
+    await ctx.db.patch(verificationToken._id, {
+      usedAt: now,
+    });
+
+    return null;
   },
 });
 

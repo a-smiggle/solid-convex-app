@@ -60,7 +60,7 @@ describe("Auth screen flows", () => {
   it("shows signup inline success on valid data", async () => {
     render(() => (
       <ToastProvider>
-        <SignUpScreen onBackToLogin={() => undefined} onSignUp={() => undefined} />
+        <SignUpScreen onBackToLogin={() => undefined} />
       </ToastProvider>
     ));
 
@@ -69,7 +69,7 @@ describe("Auth screen flows", () => {
     fireEvent.input(screen.getByLabelText("Password"), { target: { value: "password123" } });
     fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
 
-    expect(await screen.findByText(/Redirecting to your dashboard/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Check your inbox to verify your email/i)).toBeInTheDocument();
   });
 
   it("shows reset inline success on valid email", async () => {

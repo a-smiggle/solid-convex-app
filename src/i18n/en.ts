@@ -39,7 +39,7 @@ export const en = {
     },
     signup: {
       title: "Sign Up",
-      subtitle: "Create your team workspace.",
+      subtitle: "Create your team workspace. Activation requires email verification.",
       fullNameLabel: "Full Name",
       workEmailLabel: "Work Email",
       passwordLabel: "Password",
@@ -50,11 +50,11 @@ export const en = {
       submit: "Create Account",
       submitting: "Creating account...",
       backToLogin: "Back to login",
-      successInline: "Account created. Redirecting to your dashboard.",
+      successInline: "Account created. Check your inbox to verify your email before signing in.",
       toastErrorTitle: "Sign-up form incomplete",
       toastErrorDescription: "Please review required fields and try again.",
       toastSuccessTitle: "Account created",
-      toastSuccessDescription: "You are signed in and ready to go.",
+      toastSuccessDescription: "Verification email sent. Activate your account from the link before signing in.",
     },
     reset: {
       title: "Reset Password",
