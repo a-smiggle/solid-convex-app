@@ -12,6 +12,7 @@ describe("App persistence", () => {
         id: "test-user",
         email: "user@example.com",
         fullName: "Test User",
+        role: "user",
       })
     );
 

@@ -1,6 +1,8 @@
 import { Match, Show, Suspense, Switch, createEffect, createMemo, createSignal, lazy } from "solid-js";
 import { Sidebar } from "../dashboard/Sidebar";
 import { t } from "../../i18n";
+import { getDashboardTabsForRole, getSettingsTabsForRole } from "../../lib/rbac";
+import type { AuthUser } from "../../types/auth";
 import type { DashboardTab, SettingsTab } from "../../types/ui";
 
 const DashboardOverviewPage = lazy(() =>
@@ -51,6 +53,7 @@ function getStoredSettingsTab(): SettingsTab {
 }
 
 type DashboardScreenProps = {
+  currentUser: AuthUser;
   sidebarCollapsed: boolean;
   mobileSidebarOpen: boolean;
   onSetMobileSidebarOpen: (value: boolean) => void;
@@ -60,11 +63,42 @@ export function DashboardScreen(props: DashboardScreenProps) {
   const [activeTab, setActiveTab] = createSignal<DashboardTab>(getStoredDashboardTab());
   const [activeSettingsTab, setActiveSettingsTab] = createSignal<SettingsTab>(getStoredSettingsTab());
 
-  const tabs: Array<{ id: DashboardTab; label: string; description: string }> = [
-    { id: "dashboard", label: "Dashboard", description: "Core metrics and pipeline" },
-    { id: "content", label: "Content", description: "Test page and content modules" },
-    { id: "settings", label: "Settings", description: "Billing and workspace controls" },
-  ];
+  const allowedDashboardTabs = createMemo(() => getDashboardTabsForRole(props.currentUser.role));
+  const allowedSettingsTabs = createMemo(() => getSettingsTabsForRole(props.currentUser.role));
+
+  const tabs = createMemo<Array<{ id: DashboardTab; label: string; description: string }>>(() => {
+    const allTabs: Array<{ id: DashboardTab; label: string; description: string }> = [
+      { id: "dashboard", label: "Dashboard", description: "Core metrics and pipeline" },
+      { id: "content", label: "Content", description: "Test page and content modules" },
+      { id: "settings", label: "Settings", description: "Billing and workspace controls" },
+    ];
+
+    return allTabs.filter((tab) => allowedDashboardTabs().includes(tab.id));
+  });
+
+  createEffect(() => {
+    const allowedTabs = allowedDashboardTabs();
+    if (!allowedTabs.includes(activeTab())) {
+      setActiveTab(allowedTabs[0] ?? "dashboard");
+    }
+  });
+
+  createEffect(() => {
+    if (activeTab() !== "settings") {
+      return;
+    }
+
+    const allowedTabs = allowedSettingsTabs();
+
+    if (!allowedTabs.length) {
+      setActiveTab(allowedDashboardTabs()[0] ?? "dashboard");
+      return;
+    }
+
+    if (!allowedTabs.includes(activeSettingsTab())) {
+      setActiveSettingsTab(allowedTabs[0]);
+    }
+  });
 
   const pageTitle = createMemo(() => {
     if (activeTab() === "settings") {
@@ -79,6 +113,10 @@ export function DashboardScreen(props: DashboardScreenProps) {
   });
 
   const handleSelectTab = (tab: DashboardTab) => {
+    if (!allowedDashboardTabs().includes(tab)) {
+      return;
+    }
+
     setActiveTab(tab);
     props.onSetMobileSidebarOpen(false);
   };
@@ -111,7 +149,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
           class="motion-enter-slide-left motion-surface surface-panel fixed left-0 top-0 z-50 h-full w-72 rounded-none border-r p-4 md:hidden"
           role="dialog"
         >
-          <Sidebar tabs={tabs} activeTab={activeTab()} collapsed={false} onSelectTab={handleSelectTab} />
+          <Sidebar tabs={tabs()} activeTab={activeTab()} collapsed={false} onSelectTab={handleSelectTab} />
         </aside>
       </Show>
 
@@ -122,7 +160,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
           }`}
         >
           <Sidebar
-            tabs={tabs}
+            tabs={tabs()}
             activeTab={activeTab()}
             collapsed={props.sidebarCollapsed}
             onSelectTab={handleSelectTab}
@@ -151,7 +189,11 @@ export function DashboardScreen(props: DashboardScreenProps) {
                   <ContentTestPage />
                 </Match>
                 <Match when={activeTab() === "settings"}>
-                  <SettingsPage activeTab={activeSettingsTab()} onSelectTab={setActiveSettingsTab} />
+                  <SettingsPage
+                    role={props.currentUser.role}
+                    activeTab={activeSettingsTab()}
+                    onSelectTab={setActiveSettingsTab}
+                  />
                 </Match>
               </Switch>
             </Suspense>

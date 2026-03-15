@@ -266,6 +266,7 @@ function App() {
             ) : screen() === "dashboard" ? (
               <div class="motion-enter-fade-up flex min-h-0 flex-1 flex-col" id="app-main-content" tabIndex={-1}>
                 <DashboardScreen
+                  currentUser={currentUser()!}
                   sidebarCollapsed={sidebarCollapsed()}
                   mobileSidebarOpen={mobileSidebarOpen()}
                   onSetMobileSidebarOpen={setMobileSidebarOpen}

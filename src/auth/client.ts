@@ -1,6 +1,7 @@
 import { authApi } from "../convex/authApi";
 import { getConvexClient, getConvexUrl } from "../convex/client";
 import { getUserSafeErrorMessage, runApiAction } from "../lib/api";
+import { normalizeAuthRole } from "../lib/rbac";
 import type { AuthResult, AuthUser } from "../types/auth";
 
 export const AUTH_TOKEN_STORAGE_KEY = "auth-session-token";
@@ -10,6 +11,7 @@ export const AUTH_GITHUB_STATE_STORAGE_KEY = "auth-github-oauth-state";
 export type CurrentUserSettings = {
   email: string;
   fullName: string;
+  role: AuthUser["role"];
   githubLinked: boolean;
 };
 
@@ -74,7 +76,10 @@ function readMockUser() {
       return null;
     }
 
-    return parsed;
+    return {
+      ...parsed,
+      role: normalizeAuthRole((parsed as { role?: string }).role),
+    };
   } catch {
     return null;
   }
@@ -105,6 +110,7 @@ function createMockAuthResult(email: string, fullName: string): AuthResult {
       id: "test-user",
       email: normalizedEmail,
       fullName: fullName.trim() || "Test User",
+      role: "user",
     },
   };
 }
@@ -246,6 +252,7 @@ export async function getCurrentUserSettings() {
     return {
       email: mockUser.email,
       fullName: mockUser.fullName,
+      role: mockUser.role,
       githubLinked: false,
     } satisfies CurrentUserSettings;
   }

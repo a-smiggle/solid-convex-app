@@ -3,13 +3,14 @@ import { createSignal } from "solid-js";
 import { SettingsPage } from "./SettingsPage";
 import type { SettingsTab } from "../../types/ui";
 import { ToastProvider } from "../feedback/ToastProvider";
+import type { AuthRole } from "../../types/auth";
 
-function SettingsHarness() {
+function SettingsHarness(props: { role?: AuthRole }) {
   const [tab, setTab] = createSignal<SettingsTab>("billing");
 
   return (
     <ToastProvider>
-      <SettingsPage activeTab={tab()} onSelectTab={setTab} />
+      <SettingsPage role={props.role ?? "owner"} activeTab={tab()} onSelectTab={setTab} />
     </ToastProvider>
   );
 }
@@ -44,5 +45,20 @@ describe("SettingsPage accessibility", () => {
     const auditTab = screen.getByRole("tab", { name: "Audit Log" });
     fireEvent.keyDown(auditTab, { key: "Home" });
     expect(screen.getByRole("tab", { name: "Billing" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("limits billing role to billing settings tab", () => {
+    render(() => <SettingsHarness role="billing" />);
+
+    expect(screen.getByRole("tab", { name: "Billing" })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Team" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Security" })).not.toBeInTheDocument();
+  });
+
+  it("shows no settings access for standard user role", () => {
+    render(() => <SettingsHarness role="user" />);
+
+    expect(screen.getByText("No settings access")).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Billing" })).not.toBeInTheDocument();
   });
 });

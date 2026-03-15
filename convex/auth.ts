@@ -6,10 +6,13 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const PASSWORD_RESET_TTL_MS = 1000 * 60 * 30;
 const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 60 * 24;
 
+const authRoleValidator = v.union(v.literal("owner"), v.literal("admin"), v.literal("billing"), v.literal("user"));
+
 const sessionUserValidator = v.object({
   id: v.id("users"),
   email: v.string(),
   fullName: v.string(),
+  role: authRoleValidator,
 });
 
 const authResultValidator = v.object({
@@ -24,8 +27,17 @@ const signUpResultValidator = v.object({
 const userSettingsValidator = v.object({
   email: v.string(),
   fullName: v.string(),
+  role: authRoleValidator,
   githubLinked: v.boolean(),
 });
+
+function normalizeRole(role: string | undefined) {
+  if (role === "owner" || role === "admin" || role === "billing" || role === "user") {
+    return role;
+  }
+
+  return "user" as const;
+}
 
 async function getUserFromSessionToken(ctx: { db: any }, tokenInput: string) {
   const token = tokenInput.trim();
@@ -146,6 +158,7 @@ export const signUp = mutationGeneric({
       userId = await ctx.db.insert("users", {
         fullName,
         email,
+        role: "user",
         passwordDigest: hashCredential(email, args.password),
         createdAt: now,
         updatedAt: now,
@@ -214,6 +227,7 @@ export const signIn = mutationGeneric({
         id: user._id,
         email: user.email,
         fullName: user.fullName,
+        role: normalizeRole(user.role),
       },
     };
   },
@@ -247,6 +261,7 @@ export const getSession = queryGeneric({
       id: user._id,
       email: user.email,
       fullName: user.fullName,
+      role: normalizeRole(user.role),
     };
   },
 });
@@ -288,6 +303,7 @@ export const getUserSettings = queryGeneric({
     return {
       email: user.email,
       fullName: user.fullName,
+      role: normalizeRole(user.role),
       githubLinked: Boolean(user.githubId),
     };
   },
@@ -319,6 +335,7 @@ export const updateCurrentUserProfile = mutationGeneric({
       id: user._id,
       email: user.email,
       fullName,
+      role: normalizeRole(user.role),
     };
   },
 });
@@ -406,11 +423,13 @@ export const upsertGitHubUserSession = internalMutationGeneric({
           fullName: normalizedFullName,
           githubId: normalizedGithubId,
           emailVerifiedAt: existingByEmail.emailVerifiedAt ?? now,
+          role: normalizeRole(existingByEmail.role),
         };
       } else {
         const userId = await ctx.db.insert("users", {
           fullName: normalizedFullName,
           email: normalizedEmail,
+          role: "user",
           githubId: normalizedGithubId,
           emailVerifiedAt: now,
           // Password remains required by schema for email/password users.
@@ -423,6 +442,7 @@ export const upsertGitHubUserSession = internalMutationGeneric({
           _id: userId,
           fullName: normalizedFullName,
           email: normalizedEmail,
+          role: "user",
           githubId: normalizedGithubId,
         };
       }
@@ -442,6 +462,7 @@ export const upsertGitHubUserSession = internalMutationGeneric({
         id: user._id,
         email: user.email,
         fullName: user.fullName,
+        role: normalizeRole(user.role),
       },
     };
   },

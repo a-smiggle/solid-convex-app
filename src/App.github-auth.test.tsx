@@ -30,6 +30,7 @@ describe("App GitHub auth bootstrap", () => {
       id: "github-user",
       email: "github@example.com",
       fullName: "GitHub User",
+      role: "user",
     });
 
     render(() => <App />);

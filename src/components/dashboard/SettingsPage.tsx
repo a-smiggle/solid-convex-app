@@ -1,9 +1,11 @@
-import { For, Show, createMemo } from "solid-js";
+import { For, Show, createEffect, createMemo } from "solid-js";
 import type { SettingsTab } from "../../types/ui";
 import { DataTable, type DataTableColumn } from "../ui/DataTable";
 import { Button } from "../ui/Button";
 import { useToast } from "../feedback/ToastProvider";
+import { canAccessSettingsTab, getSettingsTabsForRole } from "../../lib/rbac";
 import { t } from "../../i18n";
+import type { AuthRole } from "../../types/auth";
 
 const settingsTabs: Array<{ id: SettingsTab; label: string }> = [
   { id: "billing", label: t.settings.tabs.billing },
@@ -88,27 +90,108 @@ function statusPill(status: string) {
 }
 
 type SettingsPageProps = {
+  role: AuthRole;
   activeTab: SettingsTab;
   onSelectTab: (tab: SettingsTab) => void;
+};
+
+type SettingsActionKey =
+  | "billing.upgrade"
+  | "billing.updatePayment"
+  | "billing.downloadInvoices"
+  | "team.invite"
+  | "team.manageRoles"
+  | "integrations.connect"
+  | "integrations.webhooks"
+  | "security.enforce2fa"
+  | "security.revokeSessions"
+  | "notifications.save"
+  | "notifications.sendTest"
+  | "apiKeys.create"
+  | "apiKeys.rotate"
+  | "audit.export"
+  | "audit.retention";
+
+const actionPermissionsByRole: Record<AuthRole, Set<SettingsActionKey>> = {
+  owner: new Set<SettingsActionKey>([
+    "billing.upgrade",
+    "billing.updatePayment",
+    "billing.downloadInvoices",
+    "team.invite",
+    "team.manageRoles",
+    "integrations.connect",
+    "integrations.webhooks",
+    "security.enforce2fa",
+    "security.revokeSessions",
+    "notifications.save",
+    "notifications.sendTest",
+    "apiKeys.create",
+    "apiKeys.rotate",
+    "audit.export",
+    "audit.retention",
+  ]),
+  admin: new Set<SettingsActionKey>([
+    "billing.upgrade",
+    "billing.updatePayment",
+    "billing.downloadInvoices",
+    "team.invite",
+    "team.manageRoles",
+    "integrations.connect",
+    "integrations.webhooks",
+    "security.enforce2fa",
+    "security.revokeSessions",
+    "notifications.save",
+    "notifications.sendTest",
+    "apiKeys.create",
+    "apiKeys.rotate",
+    "audit.export",
+    "audit.retention",
+  ]),
+  billing: new Set<SettingsActionKey>(["billing.upgrade", "billing.updatePayment", "billing.downloadInvoices"]),
+  user: new Set<SettingsActionKey>(),
 };
 
 export function SettingsPage(props: SettingsPageProps) {
   const { pushToast } = useToast();
   const tabRefs: Partial<Record<SettingsTab, HTMLButtonElement>> = {};
+  const availableSettingsTabs = createMemo(() =>
+    settingsTabs.filter((tab) => canAccessSettingsTab(props.role, tab.id))
+  );
+  const roleActionPermissions = createMemo(() => actionPermissionsByRole[props.role]);
 
-  const activeIndex = createMemo(() => settingsTabs.findIndex((tab) => tab.id === props.activeTab));
+  createEffect(() => {
+    if (canAccessSettingsTab(props.role, props.activeTab)) {
+      return;
+    }
+
+    const fallbackTab = getSettingsTabsForRole(props.role)[0];
+    if (fallbackTab) {
+      props.onSelectTab(fallbackTab);
+    }
+  });
+
+  const activeIndex = createMemo(() => availableSettingsTabs().findIndex((tab) => tab.id === props.activeTab));
 
   const tabId = (tab: SettingsTab) => `settings-tab-${tab}`;
   const panelId = (tab: SettingsTab) => `settings-panel-${tab}`;
 
   const selectByIndex = (index: number) => {
-    const normalized = (index + settingsTabs.length) % settingsTabs.length;
-    const nextTab = settingsTabs[normalized];
+    const tabs = availableSettingsTabs();
+    if (!tabs.length) {
+      return;
+    }
+
+    const normalized = (index + tabs.length) % tabs.length;
+    const nextTab = tabs[normalized];
     props.onSelectTab(nextTab.id);
     tabRefs[nextTab.id]?.focus();
   };
 
   const handleTabKeyDown = (event: KeyboardEvent) => {
+    if (!availableSettingsTabs().length) {
+      return;
+    }
+
     if (event.key === "ArrowRight") {
       event.preventDefault();
       selectByIndex(activeIndex() + 1);
@@ -129,11 +212,22 @@ export function SettingsPage(props: SettingsPageProps) {
 
     if (event.key === "End") {
       event.preventDefault();
-      selectByIndex(settingsTabs.length - 1);
+      selectByIndex(availableSettingsTabs().length - 1);
     }
   };
 
-  const runAction = (actionLabel: string) => {
+  const canRunAction = (actionKey: SettingsActionKey) => roleActionPermissions().has(actionKey);
+
+  const runAction = (actionKey: SettingsActionKey, actionLabel: string) => {
+    if (!canRunAction(actionKey)) {
+      pushToast({
+        type: "error",
+        title: "Permission denied",
+        description: "Your role does not have access to this settings action.",
+      });
+      return;
+    }
+
     pushToast({
       type: "info",
       title: `${actionLabel}`,
@@ -160,7 +254,7 @@ export function SettingsPage(props: SettingsPageProps) {
     <section class="space-y-4">
       <div class="overflow-x-auto pb-1 pt-1">
         <div aria-label={t.settings.tabListLabel} class="flex min-w-max gap-2" role="tablist">
-          <For each={settingsTabs}>
+          <For each={availableSettingsTabs()}>
             {(tab) => (
               <button
                 aria-controls={panelId(tab.id)}
@@ -187,6 +281,15 @@ export function SettingsPage(props: SettingsPageProps) {
         </div>
       </div>
 
+      <Show when={!availableSettingsTabs().length}>
+        <article class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75">
+          <h3 class="text-lg font-semibold">No settings access</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Your current role does not include access to workspace settings.
+          </p>
+        </article>
+      </Show>
+
       <Show when={props.activeTab === "billing"}>
         <article
           aria-labelledby={tabId("billing")}
@@ -198,13 +301,19 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Billing</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Upgrade plan")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                disabled={!canRunAction("billing.upgrade")}
+                onClick={() => runAction("billing.upgrade", "Upgrade plan")}
+                type="button"
+              >
                 Upgrade Plan
               </Button>
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Update payment method")}
+                disabled={!canRunAction("billing.updatePayment")}
+                onClick={() => runAction("billing.updatePayment", "Update payment method")}
                 type="button"
               >
                 Update Payment
@@ -231,7 +340,8 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-1.5 text-xs"
                 variant="neutral"
-                onClick={() => runAction("Download invoices")}
+                disabled={!canRunAction("billing.downloadInvoices")}
+                onClick={() => runAction("billing.downloadInvoices", "Download invoices")}
                 type="button"
               >
                 Download Invoices
@@ -258,13 +368,19 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Team</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Invite team member")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                disabled={!canRunAction("team.invite")}
+                onClick={() => runAction("team.invite", "Invite team member")}
+                type="button"
+              >
                 Invite Team Member
               </Button>
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Manage roles")}
+                disabled={!canRunAction("team.manageRoles")}
+                onClick={() => runAction("team.manageRoles", "Manage roles")}
                 type="button"
               >
                 Manage Roles
@@ -297,13 +413,19 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Integrations</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Connect integration")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                disabled={!canRunAction("integrations.connect")}
+                onClick={() => runAction("integrations.connect", "Connect integration")}
+                type="button"
+              >
                 Connect App
               </Button>
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Configure webhooks")}
+                disabled={!canRunAction("integrations.webhooks")}
+                onClick={() => runAction("integrations.webhooks", "Configure webhooks")}
                 type="button"
               >
                 Configure Webhooks
@@ -337,13 +459,19 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Security</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Enforce 2FA")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                disabled={!canRunAction("security.enforce2fa")}
+                onClick={() => runAction("security.enforce2fa", "Enforce 2FA")}
+                type="button"
+              >
                 Enforce 2FA
               </Button>
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Revoke active sessions")}
+                disabled={!canRunAction("security.revokeSessions")}
+                onClick={() => runAction("security.revokeSessions", "Revoke active sessions")}
                 type="button"
               >
                 Revoke Sessions
@@ -379,7 +507,8 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                onClick={() => runAction("Save notification preferences")}
+                disabled={!canRunAction("notifications.save")}
+                onClick={() => runAction("notifications.save", "Save notification preferences")}
                 type="button"
               >
                 Save Preferences
@@ -387,7 +516,8 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Send test notification")}
+                disabled={!canRunAction("notifications.sendTest")}
+                onClick={() => runAction("notifications.sendTest", "Send test notification")}
                 type="button"
               >
                 Send Test
@@ -421,13 +551,19 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">API Keys</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Create API key")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                disabled={!canRunAction("apiKeys.create")}
+                onClick={() => runAction("apiKeys.create", "Create API key")}
+                type="button"
+              >
                 Create Key
               </Button>
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Rotate API keys")}
+                disabled={!canRunAction("apiKeys.rotate")}
+                onClick={() => runAction("apiKeys.rotate", "Rotate API keys")}
                 type="button"
               >
                 Rotate Keys
@@ -460,13 +596,19 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Audit Log</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Export audit log CSV")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                disabled={!canRunAction("audit.export")}
+                onClick={() => runAction("audit.export", "Export audit log CSV")}
+                type="button"
+              >
                 Export CSV
               </Button>
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                onClick={() => runAction("Open retention policy")}
+                disabled={!canRunAction("audit.retention")}
+                onClick={() => runAction("audit.retention", "Open retention policy")}
                 type="button"
               >
                 Retention Policy
