@@ -3,16 +3,31 @@ import { AppHeader } from "./components/layout/AppHeader";
 import { AppFooter } from "./components/layout/AppFooter";
 import { ToastProvider } from "./components/feedback/ToastProvider";
 import { t } from "./i18n";
-import { completeEmailVerificationFromUrl, completeGitHubSignInFromUrl, restoreAuthSession, signOutCurrentSession } from "./auth/client";
+import {
+  completeEmailVerificationFromUrl,
+  completeGitHubSignInFromUrl,
+  restoreAuthSession,
+  signOutCurrentSession,
+} from "./auth/client";
 import type { AuthUser } from "./types/auth";
 import type { Screen, Theme } from "./types/ui";
 
 const AuthPromo = lazy(() => import("./components/auth/AuthPromo").then((module) => ({ default: module.AuthPromo })));
-const LoginScreen = lazy(() => import("./components/screens/LoginScreen").then((module) => ({ default: module.LoginScreen })));
-const SignUpScreen = lazy(() => import("./components/screens/SignUpScreen").then((module) => ({ default: module.SignUpScreen })));
-const ResetScreen = lazy(() => import("./components/screens/ResetScreen").then((module) => ({ default: module.ResetScreen })));
-const DashboardScreen = lazy(() => import("./components/screens/DashboardScreen").then((module) => ({ default: module.DashboardScreen })));
-const UserSettingsPage = lazy(() => import("./components/dashboard/UserSettingsPage").then((module) => ({ default: module.UserSettingsPage })));
+const LoginScreen = lazy(() =>
+  import("./components/screens/LoginScreen").then((module) => ({ default: module.LoginScreen }))
+);
+const SignUpScreen = lazy(() =>
+  import("./components/screens/SignUpScreen").then((module) => ({ default: module.SignUpScreen }))
+);
+const ResetScreen = lazy(() =>
+  import("./components/screens/ResetScreen").then((module) => ({ default: module.ResetScreen }))
+);
+const DashboardScreen = lazy(() =>
+  import("./components/screens/DashboardScreen").then((module) => ({ default: module.DashboardScreen }))
+);
+const UserSettingsPage = lazy(() =>
+  import("./components/dashboard/UserSettingsPage").then((module) => ({ default: module.UserSettingsPage }))
+);
 
 const screenValues: Screen[] = ["login", "signup", "reset", "dashboard", "user-settings"];
 
@@ -94,7 +109,8 @@ function App() {
   const [authReady, setAuthReady] = createSignal(false);
   const [sidebarCollapsed, setSidebarCollapsed] = createSignal(getInitialSidebarCollapsed());
   const [mobileSidebarOpen, setMobileSidebarOpen] = createSignal(false);
-  const isAuthenticatedArea = () => (screen() === "dashboard" || screen() === "user-settings") && Boolean(currentUser());
+  const isAuthenticatedArea = () =>
+    (screen() === "dashboard" || screen() === "user-settings") && Boolean(currentUser());
 
   onMount(async () => {
     let user: AuthUser | null = null;
@@ -203,11 +219,19 @@ function App() {
             }
           >
             {!authReady() ? (
-              <div class="surface-panel text-subtle grid min-h-[420px] place-items-center text-sm shadow-soft" id="app-main-content" tabIndex={-1}>
+              <div
+                class="surface-panel text-subtle grid min-h-[420px] place-items-center text-sm shadow-soft"
+                id="app-main-content"
+                tabIndex={-1}
+              >
                 {t.app.loadingInterface}
               </div>
             ) : screen() === "login" || screen() === "signup" || screen() === "reset" ? (
-              <section class="motion-enter-fade-up grid gap-6 lg:grid-cols-[1.1fr_1fr]" id="app-main-content" tabIndex={-1}>
+              <section
+                class="motion-enter-fade-up grid gap-6 lg:grid-cols-[1.1fr_1fr]"
+                id="app-main-content"
+                tabIndex={-1}
+              >
                 <AuthPromo />
 
                 {activeAuthScreen() === "login" && (
@@ -221,11 +245,7 @@ function App() {
                   />
                 )}
 
-                {activeAuthScreen() === "signup" && (
-                  <SignUpScreen
-                    onBackToLogin={() => setScreen("login")}
-                  />
-                )}
+                {activeAuthScreen() === "signup" && <SignUpScreen onBackToLogin={() => setScreen("login")} />}
 
                 {activeAuthScreen() === "reset" && (
                   <ResetScreen

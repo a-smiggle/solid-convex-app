@@ -4,10 +4,10 @@ import { AppErrorBoundary } from "./components/feedback/AppErrorBoundary";
 import "./index.css";
 
 render(
-	() => (
-		<AppErrorBoundary>
-			<App />
-		</AppErrorBoundary>
-	),
-	document.getElementById("root")!
+  () => (
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
+  ),
+  document.getElementById("root")!
 );

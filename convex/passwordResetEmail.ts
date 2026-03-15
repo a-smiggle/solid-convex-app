@@ -58,7 +58,7 @@ function buildMessage(appName: string, resetUrl: string | undefined) {
 
     const html = [
       `<p>A password reset was requested for your ${appName} account.</p>`,
-      `<p><a href=\"${resetUrl}\">Reset your password</a></p>`,
+      `<p><a href="${resetUrl}">Reset your password</a></p>`,
       `<p>If you did not request this, you can ignore this message.</p>`,
     ].join("");
 
@@ -99,7 +99,7 @@ function buildVerificationMessage(appName: string, verificationUrl: string | und
 
     const html = [
       `<p>Welcome to ${appName}.</p>`,
-      `<p><a href=\"${verificationUrl}\">Verify your email</a></p>`,
+      `<p><a href="${verificationUrl}">Verify your email</a></p>`,
       "<p>If you did not create this account, you can ignore this message.</p>",
     ].join("");
 
@@ -125,7 +125,14 @@ function buildVerificationMessage(appName: string, verificationUrl: string | und
   return { subject, text, html };
 }
 
-async function sendResendEmail(input: { apiKey: string; from: string; recipient: string; subject: string; text: string; html: string }) {
+async function sendResendEmail(input: {
+  apiKey: string;
+  from: string;
+  recipient: string;
+  subject: string;
+  text: string;
+  html: string;
+}) {
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {

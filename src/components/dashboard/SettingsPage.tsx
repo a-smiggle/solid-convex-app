@@ -188,19 +188,32 @@ export function SettingsPage(props: SettingsPageProps) {
       </div>
 
       <Show when={props.activeTab === "billing"}>
-        <article aria-labelledby={tabId("billing")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("billing")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("billing")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("billing")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Billing</h3>
             <div class="flex flex-wrap gap-2">
               <Button class="px-3 py-2 text-sm" onClick={() => runAction("Upgrade plan")} type="button">
                 Upgrade Plan
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Update payment method")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Update payment method")}
+                type="button"
+              >
                 Update Payment
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Current plan: Pro, $79/month. Next invoice on April 1.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Current plan: Pro, $79/month. Next invoice on April 1.
+          </p>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
               <p class="text-sm text-slate-500 dark:text-slate-400">Payment Method</p>
@@ -215,50 +228,91 @@ export function SettingsPage(props: SettingsPageProps) {
           <div class="mt-5 space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h4 class="font-semibold">Invoice History</h4>
-              <Button class="px-3 py-1.5 text-xs" variant="neutral" onClick={() => runAction("Download invoices")} type="button">
+              <Button
+                class="px-3 py-1.5 text-xs"
+                variant="neutral"
+                onClick={() => runAction("Download invoices")}
+                type="button"
+              >
                 Download Invoices
               </Button>
             </div>
-            <DataTable caption="Billing invoice history" columns={invoiceColumns} rows={invoiceTableRows} emptyMessage="No invoices available." />
+            <DataTable
+              caption="Billing invoice history"
+              columns={invoiceColumns}
+              rows={invoiceTableRows}
+              emptyMessage="No invoices available."
+            />
           </div>
         </article>
       </Show>
 
       <Show when={props.activeTab === "team"}>
-        <article aria-labelledby={tabId("team")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("team")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("team")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("team")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Team</h3>
             <div class="flex flex-wrap gap-2">
               <Button class="px-3 py-2 text-sm" onClick={() => runAction("Invite team member")} type="button">
                 Invite Team Member
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Manage roles")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Manage roles")}
+                type="button"
+              >
                 Manage Roles
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Invite members, assign roles, and manage workspace permissions.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Invite members, assign roles, and manage workspace permissions.
+          </p>
           <div class="mt-5 space-y-2">
             <h4 class="font-semibold">Members</h4>
-            <DataTable caption="Team members" columns={teamMemberColumns} rows={teamRows} emptyMessage="No team members found." />
+            <DataTable
+              caption="Team members"
+              columns={teamMemberColumns}
+              rows={teamRows}
+              emptyMessage="No team members found."
+            />
           </div>
         </article>
       </Show>
 
       <Show when={props.activeTab === "integrations"}>
-        <article aria-labelledby={tabId("integrations")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("integrations")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("integrations")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("integrations")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Integrations</h3>
             <div class="flex flex-wrap gap-2">
               <Button class="px-3 py-2 text-sm" onClick={() => runAction("Connect integration")} type="button">
                 Connect App
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Configure webhooks")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Configure webhooks")}
+                type="button"
+              >
                 Configure Webhooks
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Connect Slack, Stripe, and analytics tools for automation and reporting.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Connect Slack, Stripe, and analytics tools for automation and reporting.
+          </p>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
               <p class="text-sm text-slate-500 dark:text-slate-400">Slack</p>
@@ -273,19 +327,32 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "security"}>
-        <article aria-labelledby={tabId("security")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("security")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("security")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("security")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Security</h3>
             <div class="flex flex-wrap gap-2">
               <Button class="px-3 py-2 text-sm" onClick={() => runAction("Enforce 2FA")} type="button">
                 Enforce 2FA
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Revoke active sessions")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Revoke active sessions")}
+                type="button"
+              >
                 Revoke Sessions
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Manage authentication requirements, sessions, and workspace protection rules.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Manage authentication requirements, sessions, and workspace protection rules.
+          </p>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
               <p class="text-sm text-slate-500 dark:text-slate-400">Two-Factor Authentication</p>
@@ -300,19 +367,36 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "notifications"}>
-        <article aria-labelledby={tabId("notifications")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("notifications")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("notifications")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("notifications")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Notifications</h3>
             <div class="flex flex-wrap gap-2">
-              <Button class="px-3 py-2 text-sm" onClick={() => runAction("Save notification preferences")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                onClick={() => runAction("Save notification preferences")}
+                type="button"
+              >
                 Save Preferences
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Send test notification")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Send test notification")}
+                type="button"
+              >
                 Send Test
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Control where alerts, billing notices, and security events are delivered.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Control where alerts, billing notices, and security events are delivered.
+          </p>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
               <p class="text-sm text-slate-500 dark:text-slate-400">Product Updates</p>
@@ -327,40 +411,71 @@ export function SettingsPage(props: SettingsPageProps) {
       </Show>
 
       <Show when={props.activeTab === "apiKeys"}>
-        <article aria-labelledby={tabId("apiKeys")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("apiKeys")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("apiKeys")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("apiKeys")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">API Keys</h3>
             <div class="flex flex-wrap gap-2">
               <Button class="px-3 py-2 text-sm" onClick={() => runAction("Create API key")} type="button">
                 Create Key
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Rotate API keys")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Rotate API keys")}
+                type="button"
+              >
                 Rotate Keys
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Create and rotate programmatic credentials with scoped access policies.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Create and rotate programmatic credentials with scoped access policies.
+          </p>
           <div class="mt-5 space-y-2">
             <h4 class="font-semibold">Keys</h4>
-            <DataTable caption="API keys" columns={apiKeyColumns} rows={keyRows} emptyMessage="No API keys created yet." />
+            <DataTable
+              caption="API keys"
+              columns={apiKeyColumns}
+              rows={keyRows}
+              emptyMessage="No API keys created yet."
+            />
           </div>
         </article>
       </Show>
 
       <Show when={props.activeTab === "auditLog"}>
-        <article aria-labelledby={tabId("auditLog")} class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75" id={panelId("auditLog")} role="tabpanel" tabIndex={0}>
+        <article
+          aria-labelledby={tabId("auditLog")}
+          class="motion-enter-fade-up motion-surface rounded-xl border border-slate-200/70 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/75"
+          id={panelId("auditLog")}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <h3 class="text-lg font-semibold">Audit Log</h3>
             <div class="flex flex-wrap gap-2">
               <Button class="px-3 py-2 text-sm" onClick={() => runAction("Export audit log CSV")} type="button">
                 Export CSV
               </Button>
-              <Button class="px-3 py-2 text-sm" variant="neutral" onClick={() => runAction("Open retention policy")} type="button">
+              <Button
+                class="px-3 py-2 text-sm"
+                variant="neutral"
+                onClick={() => runAction("Open retention policy")}
+                type="button"
+              >
                 Retention Policy
               </Button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Track workspace-level changes for compliance and operational troubleshooting.</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Track workspace-level changes for compliance and operational troubleshooting.
+          </p>
           <div class="mt-5 space-y-2">
             <h4 class="font-semibold">Recent Events</h4>
             <DataTable caption="Audit log" columns={auditColumns} rows={auditRows} emptyMessage="No events recorded." />

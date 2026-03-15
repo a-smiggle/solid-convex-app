@@ -33,7 +33,10 @@ async function getUserFromSessionToken(ctx: { db: any }, tokenInput: string) {
     return null;
   }
 
-  const session = await ctx.db.query("sessions").withIndex("by_token", (q: any) => q.eq("token", token)).unique();
+  const session = await ctx.db
+    .query("sessions")
+    .withIndex("by_token", (q: any) => q.eq("token", token))
+    .unique();
   if (!session || session.expiresAt < Date.now()) {
     return null;
   }
@@ -120,7 +123,10 @@ export const signUp = mutationGeneric({
       throw new Error("Password must be at least 8 characters.");
     }
 
-    const existingUser = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", email)).unique();
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .unique();
     const now = Date.now();
 
     let userId;
@@ -179,7 +185,10 @@ export const signIn = mutationGeneric({
   returns: authResultValidator,
   handler: async (ctx, args) => {
     const email = normalizeEmail(args.email);
-    const user = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", email)).unique();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .unique();
 
     if (!user || user.passwordDigest !== hashCredential(email, args.password)) {
       throw new Error("Invalid email or password.");
@@ -221,7 +230,10 @@ export const getSession = queryGeneric({
       return null;
     }
 
-    const session = await ctx.db.query("sessions").withIndex("by_token", (q) => q.eq("token", token)).unique();
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
     if (!session || session.expiresAt < Date.now()) {
       return null;
     }
@@ -250,7 +262,10 @@ export const signOut = mutationGeneric({
       return null;
     }
 
-    const session = await ctx.db.query("sessions").withIndex("by_token", (q) => q.eq("token", token)).unique();
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
     if (session) {
       await ctx.db.delete(session._id);
     }
@@ -350,7 +365,10 @@ export const upsertGitHubUserSession = internalMutationGeneric({
     const normalizedGithubId = args.githubId.trim();
     const normalizedFullName = normalizeGitHubName(args.fullName, normalizedEmail);
 
-    let user = await ctx.db.query("users").withIndex("by_github_id", (q) => q.eq("githubId", normalizedGithubId)).unique();
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_github_id", (q) => q.eq("githubId", normalizedGithubId))
+      .unique();
     const now = Date.now();
 
     if (user) {
@@ -370,7 +388,10 @@ export const upsertGitHubUserSession = internalMutationGeneric({
         emailVerifiedAt: user.emailVerifiedAt ?? now,
       };
     } else {
-      const existingByEmail = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", normalizedEmail)).unique();
+      const existingByEmail = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
+        .unique();
 
       if (existingByEmail) {
         await ctx.db.patch(existingByEmail._id, {
@@ -593,7 +614,10 @@ export const requestPasswordReset = mutationGeneric({
       throw new Error("Enter a valid account email.");
     }
 
-    const existingUser = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", email)).unique();
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .unique();
 
     await ctx.db.insert("passwordResetRequests", {
       email,
@@ -649,7 +673,10 @@ export const verifyPasswordResetToken = queryGeneric({
       } as const;
     }
 
-    const resetToken = await ctx.db.query("passwordResetTokens").withIndex("by_token", (q) => q.eq("token", token)).unique();
+    const resetToken = await ctx.db
+      .query("passwordResetTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
     if (!resetToken) {
       return {
         ok: false,
@@ -693,7 +720,10 @@ export const completePasswordReset = mutationGeneric({
       throw new Error("Password must be at least 8 characters.");
     }
 
-    const resetToken = await ctx.db.query("passwordResetTokens").withIndex("by_token", (q) => q.eq("token", token)).unique();
+    const resetToken = await ctx.db
+      .query("passwordResetTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
     if (!resetToken) {
       throw new Error("This reset link is invalid.");
     }
@@ -722,7 +752,10 @@ export const completePasswordReset = mutationGeneric({
       usedAt: now,
     });
 
-    const activeSessions = await ctx.db.query("sessions").withIndex("by_user_id", (q) => q.eq("userId", user._id)).collect();
+    const activeSessions = await ctx.db
+      .query("sessions")
+      .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+      .collect();
     await Promise.all(activeSessions.map((session) => ctx.db.delete(session._id)));
 
     return null;

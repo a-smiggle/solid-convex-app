@@ -6,9 +6,15 @@ export function AppFooter() {
       <div class="mx-auto flex w-full max-w-[1600px] flex-col gap-2 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
         <p>© {currentYear} Solid + Convex. All rights reserved.</p>
         <div class="flex items-center gap-4">
-          <button class="transition hover:text-cyan-700 dark:hover:text-cyan-300" type="button">Docs</button>
-          <button class="transition hover:text-cyan-700 dark:hover:text-cyan-300" type="button">Privacy</button>
-          <button class="transition hover:text-cyan-700 dark:hover:text-cyan-300" type="button">Support</button>
+          <button class="transition hover:text-cyan-700 dark:hover:text-cyan-300" type="button">
+            Docs
+          </button>
+          <button class="transition hover:text-cyan-700 dark:hover:text-cyan-300" type="button">
+            Privacy
+          </button>
+          <button class="transition hover:text-cyan-700 dark:hover:text-cyan-300" type="button">
+            Support
+          </button>
         </div>
       </div>
     </footer>

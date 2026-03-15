@@ -70,7 +70,10 @@ export function DataTable(props: DataTableProps) {
                 <tr class="last:border-b-0" style={{ "border-bottom": "1px solid var(--color-border-default)" }}>
                   <For each={props.columns}>
                     {(column) => (
-                      <td class={`px-4 py-3 md:py-3.5 ${alignClass(column.align)} ${column.class ?? ""}`.trim()} style={{ color: "var(--color-text-primary)" }}>
+                      <td
+                        class={`px-4 py-3 md:py-3.5 ${alignClass(column.align)} ${column.class ?? ""}`.trim()}
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
                         {row[column.key]}
                       </td>
                     )}

@@ -6,11 +6,23 @@ import type { DashboardTab, SettingsTab } from "../../types/ui";
 const DashboardOverviewPage = lazy(() =>
   import("../dashboard/DashboardOverviewPage").then((module) => ({ default: module.DashboardOverviewPage }))
 );
-const ContentTestPage = lazy(() => import("../dashboard/ContentTestPage").then((module) => ({ default: module.ContentTestPage })));
-const SettingsPage = lazy(() => import("../dashboard/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const ContentTestPage = lazy(() =>
+  import("../dashboard/ContentTestPage").then((module) => ({ default: module.ContentTestPage }))
+);
+const SettingsPage = lazy(() =>
+  import("../dashboard/SettingsPage").then((module) => ({ default: module.SettingsPage }))
+);
 
 const dashboardTabs: DashboardTab[] = ["dashboard", "content", "settings"];
-const settingsTabs: SettingsTab[] = ["billing", "team", "integrations", "security", "notifications", "apiKeys", "auditLog"];
+const settingsTabs: SettingsTab[] = [
+  "billing",
+  "team",
+  "integrations",
+  "security",
+  "notifications",
+  "apiKeys",
+  "auditLog",
+];
 
 function getStoredDashboardTab(): DashboardTab {
   if (typeof window === "undefined") {
@@ -93,7 +105,12 @@ export function DashboardScreen(props: DashboardScreenProps) {
           onClick={() => props.onSetMobileSidebarOpen(false)}
           type="button"
         />
-        <aside aria-label="Mobile sidebar" aria-modal="true" class="motion-enter-slide-left motion-surface surface-panel fixed left-0 top-0 z-50 h-full w-72 rounded-none border-r p-4 md:hidden" role="dialog">
+        <aside
+          aria-label="Mobile sidebar"
+          aria-modal="true"
+          class="motion-enter-slide-left motion-surface surface-panel fixed left-0 top-0 z-50 h-full w-72 rounded-none border-r p-4 md:hidden"
+          role="dialog"
+        >
           <Sidebar tabs={tabs} activeTab={activeTab()} collapsed={false} onSelectTab={handleSelectTab} />
         </aside>
       </Show>
@@ -104,7 +121,12 @@ export function DashboardScreen(props: DashboardScreenProps) {
             props.sidebarCollapsed ? "w-16 md:w-20" : "w-56 md:w-64 lg:w-72"
           }`}
         >
-          <Sidebar tabs={tabs} activeTab={activeTab()} collapsed={props.sidebarCollapsed} onSelectTab={handleSelectTab} />
+          <Sidebar
+            tabs={tabs}
+            activeTab={activeTab()}
+            collapsed={props.sidebarCollapsed}
+            onSelectTab={handleSelectTab}
+          />
         </aside>
 
         <div class="motion-enter-fade-up motion-stagger-1 motion-surface surface-panel flex h-full min-h-0 flex-col p-3.5 shadow-sm sm:p-4 md:p-5">

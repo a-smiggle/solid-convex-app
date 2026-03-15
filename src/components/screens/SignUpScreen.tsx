@@ -129,7 +129,12 @@ export function SignUpScreen(props: SignUpScreenProps) {
           </p>
         </Show>
       </form>
-      <Button variant="ghost" class="mt-4 justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onBackToLogin} type="button">
+      <Button
+        variant="ghost"
+        class="mt-4 justify-start px-0 py-0.5 text-sm font-medium"
+        onClick={props.onBackToLogin}
+        type="button"
+      >
         {t.auth.signup.backToLogin}
       </Button>
     </AuthCard>

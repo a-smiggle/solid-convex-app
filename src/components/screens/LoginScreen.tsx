@@ -130,15 +130,31 @@ export function LoginScreen(props: LoginScreenProps) {
         <Button class="w-full" disabled={isLoading()} type="submit">
           {isLoading() ? t.auth.login.submitting : t.auth.login.submit}
         </Button>
-        <Button variant="secondary" class="w-full" disabled={isLoading() || isGitHubLoading()} onClick={handleGitHubSignIn} type="button">
+        <Button
+          variant="secondary"
+          class="w-full"
+          disabled={isLoading() || isGitHubLoading()}
+          onClick={handleGitHubSignIn}
+          type="button"
+        >
           {isGitHubLoading() ? t.auth.login.githubSubmitting : t.auth.login.githubSubmit}
         </Button>
       </form>
       <div class="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:justify-between">
-        <Button variant="ghost" class="justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onShowReset} type="button">
+        <Button
+          variant="ghost"
+          class="justify-start px-0 py-0.5 text-sm font-medium"
+          onClick={props.onShowReset}
+          type="button"
+        >
           {t.auth.login.forgotPassword}
         </Button>
-        <Button variant="ghost" class="justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onShowSignup} type="button">
+        <Button
+          variant="ghost"
+          class="justify-start px-0 py-0.5 text-sm font-medium"
+          onClick={props.onShowSignup}
+          type="button"
+        >
           {t.auth.login.createAccount}
         </Button>
       </div>

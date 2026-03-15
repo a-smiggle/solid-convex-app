@@ -59,9 +59,16 @@ export function ContentTestPage() {
       <article class="space-y-3">
         <div>
           <h4 class="text-base font-semibold">Recent Content Activity</h4>
-          <p class="text-sm text-slate-600 dark:text-slate-300">Reusable table pattern for content operations and moderation queues.</p>
+          <p class="text-sm text-slate-600 dark:text-slate-300">
+            Reusable table pattern for content operations and moderation queues.
+          </p>
         </div>
-        <DataTable caption="Recent content activity" columns={contentColumns} rows={tableRows} emptyMessage="No content activity found." />
+        <DataTable
+          caption="Recent content activity"
+          columns={contentColumns}
+          rows={tableRows}
+          emptyMessage="No content activity found."
+        />
       </article>
     </section>
   );

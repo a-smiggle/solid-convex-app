@@ -84,7 +84,9 @@ export function ConvexSampleTableCard() {
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 class="font-semibold">Convex Sample Table</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Live rows from the sampleRows table in your Convex deployment.</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Live rows from the sampleRows table in your Convex deployment.
+          </p>
         </div>
 
         <Button disabled={isAdding() || !hasConvexUrl()} onClick={handleInsertRow} type="button" variant="secondary">
@@ -93,7 +95,9 @@ export function ConvexSampleTableCard() {
       </div>
 
       <Show when={!hasConvexUrl()}>
-        <p class="mt-3 text-sm text-amber-700 dark:text-amber-300">Set VITE_CONVEX_URL (or keep CONVEX_URL) in .env.local to enable live data calls.</p>
+        <p class="mt-3 text-sm text-amber-700 dark:text-amber-300">
+          Set VITE_CONVEX_URL (or keep CONVEX_URL) in .env.local to enable live data calls.
+        </p>
       </Show>
 
       <Show when={rows.error}>
@@ -109,7 +113,9 @@ export function ConvexSampleTableCard() {
           caption="Convex sample rows"
           columns={columns}
           rows={tableRows()}
-          emptyMessage={rows.loading ? "Loading rows from Convex..." : "No sample rows yet. Insert one to verify the connection."}
+          emptyMessage={
+            rows.loading ? "Loading rows from Convex..." : "No sample rows yet. Insert one to verify the connection."
+          }
         />
       </div>
     </section>

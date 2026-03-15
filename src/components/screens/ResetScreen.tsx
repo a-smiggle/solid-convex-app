@@ -161,7 +161,10 @@ export function ResetScreen(props: ResetScreenProps) {
   };
 
   return (
-    <AuthCard title={inCompletionFlow() ? t.auth.reset.completeTitle : t.auth.reset.title} subtitle={inCompletionFlow() ? t.auth.reset.completeSubtitle : t.auth.reset.subtitle}>
+    <AuthCard
+      title={inCompletionFlow() ? t.auth.reset.completeTitle : t.auth.reset.title}
+      subtitle={inCompletionFlow() ? t.auth.reset.completeSubtitle : t.auth.reset.subtitle}
+    >
       <Switch>
         <Match when={!inCompletionFlow()}>
           <form class="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -220,7 +223,12 @@ export function ResetScreen(props: ResetScreenProps) {
               type="password"
               value={confirmPassword()}
             />
-            <Button variant="secondary" class="w-full" disabled={isLoading() || Boolean(tokenErrorMessage())} type="submit">
+            <Button
+              variant="secondary"
+              class="w-full"
+              disabled={isLoading() || Boolean(tokenErrorMessage())}
+              type="submit"
+            >
               {isLoading() ? t.auth.reset.completeSubmitting : t.auth.reset.completeSubmit}
             </Button>
             <Show when={passwordUpdated()}>
@@ -231,7 +239,12 @@ export function ResetScreen(props: ResetScreenProps) {
           </form>
         </Match>
       </Switch>
-      <Button variant="ghost" class="mt-4 justify-start px-0 py-0.5 text-sm font-medium" onClick={props.onBackToLogin} type="button">
+      <Button
+        variant="ghost"
+        class="mt-4 justify-start px-0 py-0.5 text-sm font-medium"
+        onClick={props.onBackToLogin}
+        type="button"
+      >
         {t.auth.reset.backToLogin}
       </Button>
     </AuthCard>

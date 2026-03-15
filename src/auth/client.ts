@@ -461,6 +461,8 @@ export async function completePasswordReset(input: { token: string; password: st
       }
     );
   } catch (error) {
-    throw new Error(toSafeResetErrorMessage(error, "Unable to reset your password right now. Please request a new link."));
+    throw new Error(
+      toSafeResetErrorMessage(error, "Unable to reset your password right now. Please request a new link.")
+    );
   }
 }

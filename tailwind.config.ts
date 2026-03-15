@@ -9,8 +9,7 @@ const config: Config = {
         soft: "0 8px 30px rgb(2 6 23 / 0.12)",
       },
       backgroundImage: {
-        "hero-grid":
-          "radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.18) 1px, transparent 0)",
+        "hero-grid": "radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.18) 1px, transparent 0)",
       },
     },
   },

@@ -359,7 +359,9 @@ body {
 }
 
 .interactive-item {
-  transition: background-color 160ms ease, border-color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 
 .interactive-item:hover {

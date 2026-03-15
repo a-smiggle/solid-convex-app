@@ -2,11 +2,13 @@ import { render, waitFor } from "@solidjs/testing-library";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
-const { completeEmailVerificationFromUrlMock, completeGitHubSignInFromUrlMock, restoreAuthSessionMock } = vi.hoisted(() => ({
-  completeEmailVerificationFromUrlMock: vi.fn(),
-  completeGitHubSignInFromUrlMock: vi.fn(),
-  restoreAuthSessionMock: vi.fn(),
-}));
+const { completeEmailVerificationFromUrlMock, completeGitHubSignInFromUrlMock, restoreAuthSessionMock } = vi.hoisted(
+  () => ({
+    completeEmailVerificationFromUrlMock: vi.fn(),
+    completeGitHubSignInFromUrlMock: vi.fn(),
+    restoreAuthSessionMock: vi.fn(),
+  })
+);
 
 vi.mock("./auth/client", async () => {
   const actual = await vi.importActual<typeof import("./auth/client")>("./auth/client");

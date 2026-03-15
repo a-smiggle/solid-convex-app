@@ -10,8 +10,18 @@ export type SampleRowRecord = {
   createdAt: number;
 };
 
-type PublicQuery<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<"query", "public", Args, ReturnValue>;
-type PublicMutation<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<"mutation", "public", Args, ReturnValue>;
+type PublicQuery<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<
+  "query",
+  "public",
+  Args,
+  ReturnValue
+>;
+type PublicMutation<Args extends DefaultFunctionArgs, ReturnValue> = FunctionReference<
+  "mutation",
+  "public",
+  Args,
+  ReturnValue
+>;
 
 export const sampleRowsApi = {
   list: "sampleRows:list" as unknown as PublicQuery<Record<string, never>, SampleRowRecord[]>,

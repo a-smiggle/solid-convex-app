@@ -53,7 +53,13 @@ export function AppHeader(props: AppHeaderProps) {
     <div class="motion-enter-fade motion-surface surface-elevated relative z-40 mb-5 flex flex-wrap items-center justify-between gap-3 px-3 py-3 backdrop-blur sm:mb-6 sm:px-4 md:flex-nowrap">
       <div class="flex min-w-0 items-center gap-2.5 sm:gap-3">
         {props.showSidebarToggle && (
-          <Button aria-label={t.header.toggleSidebar} variant="neutral" class="px-3 py-2" onClick={props.onToggleSidebar} type="button">
+          <Button
+            aria-label={t.header.toggleSidebar}
+            variant="neutral"
+            class="px-3 py-2"
+            onClick={props.onToggleSidebar}
+            type="button"
+          >
             <Menu aria-hidden="true" class="h-4 w-4" stroke-width={2} />
           </Button>
         )}
@@ -90,7 +96,11 @@ export function AppHeader(props: AppHeaderProps) {
               type="button"
             >
               <User aria-hidden="true" class="h-4 w-4" stroke-width={2} />
-              <ChevronDown aria-hidden="true" class={`motion-transition h-4 w-4 ${menuOpen() ? "rotate-180" : ""}`} stroke-width={2} />
+              <ChevronDown
+                aria-hidden="true"
+                class={`motion-transition h-4 w-4 ${menuOpen() ? "rotate-180" : ""}`}
+                stroke-width={2}
+              />
             </Button>
 
             {menuOpen() && (
