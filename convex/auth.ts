@@ -7,6 +7,7 @@ const PASSWORD_RESET_TTL_MS = 1000 * 60 * 30;
 const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 60 * 24;
 
 const authRoleValidator = v.union(v.literal("owner"), v.literal("admin"), v.literal("billing"), v.literal("user"));
+type AuthRole = "owner" | "admin" | "billing" | "user";
 
 const sessionUserValidator = v.object({
   id: v.id("users"),
@@ -31,7 +32,7 @@ const userSettingsValidator = v.object({
   githubLinked: v.boolean(),
 });
 
-function normalizeRole(role: string | undefined) {
+function normalizeRole(role: string | undefined): AuthRole {
   if (role === "owner" || role === "admin" || role === "billing" || role === "user") {
     return role;
   }
