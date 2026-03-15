@@ -30,7 +30,7 @@ export const authApi = {
   getSession: "auth:getSession" as unknown as PublicQuery<{ token: string }, AuthUser | null>,
   getUserSettings: "auth:getUserSettings" as unknown as PublicQuery<
     { token: string },
-    { email: string; fullName: string; githubLinked: boolean } | null
+    { email: string; fullName: string; role: "owner" | "admin" | "billing" | "user"; githubLinked: boolean } | null
   >,
   signOut: "auth:signOut" as unknown as PublicMutation<{ token: string }, null>,
   updateCurrentUserProfile: "auth:updateCurrentUserProfile" as unknown as PublicMutation<

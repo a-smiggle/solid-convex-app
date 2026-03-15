@@ -1,5 +1,6 @@
 import { authApi } from "../convex/authApi";
 import { getConvexClient, getConvexUrl } from "../convex/client";
+import { settingsApi, type SettingsActionKey } from "../convex/settingsApi";
 import { getUserSafeErrorMessage, runApiAction } from "../lib/api";
 import { normalizeAuthRole } from "../lib/rbac";
 import type { AuthResult, AuthUser } from "../types/auth";
@@ -472,4 +473,28 @@ export async function completePasswordReset(input: { token: string; password: st
       toSafeResetErrorMessage(error, "Unable to reset your password right now. Please request a new link.")
     );
   }
+}
+
+export async function performSettingsAction(input: { action: SettingsActionKey; sourceTab?: string }) {
+  const token = getRequiredSessionToken();
+  const client = ensureConvexAvailable();
+
+  if (!client) {
+    return {
+      ok: true as const,
+      auditLogId: "mock-audit-log",
+    };
+  }
+
+  return await runApiAction(
+    () =>
+      client.mutation(settingsApi.performSettingsAction, {
+        token,
+        action: input.action,
+        sourceTab: input.sourceTab,
+      }),
+    {
+      fallbackMessage: "Unable to save this settings change right now.",
+    }
+  );
 }

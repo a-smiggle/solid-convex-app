@@ -1,9 +1,11 @@
-import { For, Show, createEffect, createMemo } from "solid-js";
+import { For, Show, createEffect, createMemo, createSignal } from "solid-js";
 import type { SettingsTab } from "../../types/ui";
 import { DataTable, type DataTableColumn } from "../ui/DataTable";
 import { Button } from "../ui/Button";
 import { useToast } from "../feedback/ToastProvider";
 import { canAccessSettingsTab, getSettingsTabsForRole } from "../../lib/rbac";
+import { performSettingsAction } from "../../auth/client";
+import type { SettingsActionKey } from "../../convex/settingsApi";
 import { t } from "../../i18n";
 import type { AuthRole } from "../../types/auth";
 
@@ -95,23 +97,6 @@ type SettingsPageProps = {
   onSelectTab: (tab: SettingsTab) => void;
 };
 
-type SettingsActionKey =
-  | "billing.upgrade"
-  | "billing.updatePayment"
-  | "billing.downloadInvoices"
-  | "team.invite"
-  | "team.manageRoles"
-  | "integrations.connect"
-  | "integrations.webhooks"
-  | "security.enforce2fa"
-  | "security.revokeSessions"
-  | "notifications.save"
-  | "notifications.sendTest"
-  | "apiKeys.create"
-  | "apiKeys.rotate"
-  | "audit.export"
-  | "audit.retention";
-
 const actionPermissionsByRole: Record<AuthRole, Set<SettingsActionKey>> = {
   owner: new Set<SettingsActionKey>([
     "billing.upgrade",
@@ -154,6 +139,7 @@ const actionPermissionsByRole: Record<AuthRole, Set<SettingsActionKey>> = {
 export function SettingsPage(props: SettingsPageProps) {
   const { pushToast } = useToast();
   const tabRefs: Partial<Record<SettingsTab, HTMLButtonElement>> = {};
+  const [pendingAction, setPendingAction] = createSignal<SettingsActionKey | null>(null);
   const availableSettingsTabs = createMemo(() =>
     settingsTabs.filter((tab) => canAccessSettingsTab(props.role, tab.id))
   );
@@ -217,8 +203,9 @@ export function SettingsPage(props: SettingsPageProps) {
   };
 
   const canRunAction = (actionKey: SettingsActionKey) => roleActionPermissions().has(actionKey);
+  const isActionPending = (actionKey: SettingsActionKey) => pendingAction() === actionKey;
 
-  const runAction = (actionKey: SettingsActionKey, actionLabel: string) => {
+  const runAction = async (actionKey: SettingsActionKey, actionLabel: string) => {
     if (!canRunAction(actionKey)) {
       pushToast({
         type: "error",
@@ -228,11 +215,24 @@ export function SettingsPage(props: SettingsPageProps) {
       return;
     }
 
-    pushToast({
-      type: "info",
-      title: `${actionLabel}`,
-      description: "Action queued. Connect this control to your backend workflow.",
-    });
+    setPendingAction(actionKey);
+
+    try {
+      await performSettingsAction({ action: actionKey, sourceTab: props.activeTab });
+      pushToast({
+        type: "success",
+        title: actionLabel,
+        description: "Settings updated and audit event recorded.",
+      });
+    } catch (error) {
+      pushToast({
+        type: "error",
+        title: actionLabel,
+        description: error instanceof Error ? error.message : "Unable to save this settings change right now.",
+      });
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   const invoiceTableRows = invoiceRows.map((row) => ({
@@ -303,7 +303,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("billing.upgrade")}
+                disabled={!canRunAction("billing.upgrade") || isActionPending("billing.upgrade")}
                 onClick={() => runAction("billing.upgrade", "Upgrade plan")}
                 type="button"
               >
@@ -312,7 +312,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("billing.updatePayment")}
+                disabled={!canRunAction("billing.updatePayment") || isActionPending("billing.updatePayment")}
                 onClick={() => runAction("billing.updatePayment", "Update payment method")}
                 type="button"
               >
@@ -340,7 +340,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-1.5 text-xs"
                 variant="neutral"
-                disabled={!canRunAction("billing.downloadInvoices")}
+                disabled={!canRunAction("billing.downloadInvoices") || isActionPending("billing.downloadInvoices")}
                 onClick={() => runAction("billing.downloadInvoices", "Download invoices")}
                 type="button"
               >
@@ -370,7 +370,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("team.invite")}
+                disabled={!canRunAction("team.invite") || isActionPending("team.invite")}
                 onClick={() => runAction("team.invite", "Invite team member")}
                 type="button"
               >
@@ -379,7 +379,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("team.manageRoles")}
+                disabled={!canRunAction("team.manageRoles") || isActionPending("team.manageRoles")}
                 onClick={() => runAction("team.manageRoles", "Manage roles")}
                 type="button"
               >
@@ -415,7 +415,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("integrations.connect")}
+                disabled={!canRunAction("integrations.connect") || isActionPending("integrations.connect")}
                 onClick={() => runAction("integrations.connect", "Connect integration")}
                 type="button"
               >
@@ -424,7 +424,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("integrations.webhooks")}
+                disabled={!canRunAction("integrations.webhooks") || isActionPending("integrations.webhooks")}
                 onClick={() => runAction("integrations.webhooks", "Configure webhooks")}
                 type="button"
               >
@@ -461,7 +461,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("security.enforce2fa")}
+                disabled={!canRunAction("security.enforce2fa") || isActionPending("security.enforce2fa")}
                 onClick={() => runAction("security.enforce2fa", "Enforce 2FA")}
                 type="button"
               >
@@ -470,7 +470,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("security.revokeSessions")}
+                disabled={!canRunAction("security.revokeSessions") || isActionPending("security.revokeSessions")}
                 onClick={() => runAction("security.revokeSessions", "Revoke active sessions")}
                 type="button"
               >
@@ -507,7 +507,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("notifications.save")}
+                disabled={!canRunAction("notifications.save") || isActionPending("notifications.save")}
                 onClick={() => runAction("notifications.save", "Save notification preferences")}
                 type="button"
               >
@@ -516,7 +516,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("notifications.sendTest")}
+                disabled={!canRunAction("notifications.sendTest") || isActionPending("notifications.sendTest")}
                 onClick={() => runAction("notifications.sendTest", "Send test notification")}
                 type="button"
               >
@@ -553,7 +553,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("apiKeys.create")}
+                disabled={!canRunAction("apiKeys.create") || isActionPending("apiKeys.create")}
                 onClick={() => runAction("apiKeys.create", "Create API key")}
                 type="button"
               >
@@ -562,7 +562,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("apiKeys.rotate")}
+                disabled={!canRunAction("apiKeys.rotate") || isActionPending("apiKeys.rotate")}
                 onClick={() => runAction("apiKeys.rotate", "Rotate API keys")}
                 type="button"
               >
@@ -598,7 +598,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <div class="flex flex-wrap gap-2">
               <Button
                 class="px-3 py-2 text-sm"
-                disabled={!canRunAction("audit.export")}
+                disabled={!canRunAction("audit.export") || isActionPending("audit.export")}
                 onClick={() => runAction("audit.export", "Export audit log CSV")}
                 type="button"
               >
@@ -607,7 +607,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <Button
                 class="px-3 py-2 text-sm"
                 variant="neutral"
-                disabled={!canRunAction("audit.retention")}
+                disabled={!canRunAction("audit.retention") || isActionPending("audit.retention")}
                 onClick={() => runAction("audit.retention", "Open retention policy")}
                 type="button"
               >
