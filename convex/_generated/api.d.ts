@@ -11,6 +11,8 @@
 import type * as auth from "../auth.js";
 import type * as passwordResetEmail from "../passwordResetEmail.js";
 import type * as sampleRows from "../sampleRows.js";
+import type * as seedUsers from "../seedUsers.js";
+import type * as settings from "../settings.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +24,8 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   passwordResetEmail: typeof passwordResetEmail;
   sampleRows: typeof sampleRows;
+  seedUsers: typeof seedUsers;
+  settings: typeof settings;
 }>;
 
 /**

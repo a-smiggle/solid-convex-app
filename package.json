@@ -9,6 +9,8 @@
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
     "convex:deploy": "convex deploy",
+    "convex:seed-users": "convex dev --once --run seedUsers:seedTestUsers",
+    "convex:seed-clear-users": "convex dev --once --run seedUsers:clearTestUsers",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
