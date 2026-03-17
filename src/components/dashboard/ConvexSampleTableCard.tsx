@@ -4,7 +4,9 @@ import { runApiAction } from "../../lib/api";
 import { sampleRowsApi } from "../../convex/sampleRowsApi";
 import { useToast } from "../feedback/ToastProvider";
 import { Button } from "../ui/Button";
+
 import { DataTable, type DataTableColumn } from "../ui/DataTable";
+import { TableSkeleton } from "../ui/TableSkeleton";
 
 const columns: DataTableColumn[] = [
   { key: "label", label: "Label" },
@@ -109,14 +111,16 @@ export function ConvexSampleTableCard() {
       </Show>
 
       <div class="mt-4">
-        <DataTable
-          caption="Convex sample rows"
-          columns={columns}
-          rows={tableRows()}
-          emptyMessage={
-            rows.loading ? "Loading rows from Convex..." : "No sample rows yet. Insert one to verify the connection."
-          }
-        />
+        <Show when={!rows.loading} fallback={<TableSkeleton columns={columns.length} rows={5} />}>
+          <DataTable
+            caption="Convex sample rows"
+            columns={columns}
+            rows={tableRows()}
+            emptyMessage={
+              rows.loading ? "Loading rows from Convex..." : "No sample rows yet. Insert one to verify the connection."
+            }
+          />
+        </Show>
       </div>
     </section>
   );
